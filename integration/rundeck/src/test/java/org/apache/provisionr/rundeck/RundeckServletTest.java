@@ -61,4 +61,9 @@ public class RundeckServletTest {
             processEngine.close();
         }
     }
+
+    @Test
+    public void testAddPrefixFunction() {
+
+    }
 }

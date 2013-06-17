@@ -19,10 +19,12 @@
 package org.apache.provisionr.rundeck;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
+import static com.google.common.collect.Iterables.transform;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -57,7 +59,8 @@ public class RundeckServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
         response.setContentType("application/xml;charset=UTF-8");
         writeRundeckResourceModelXmlTo(response.getWriter());
     }
@@ -107,7 +110,7 @@ public class RundeckServlet extends HttpServlet {
             Node node = new Node(machine.getExternalId(), machine.getPublicDnsName(),
                 pool.getAdminAccess().getUsername());
 
-            node.setTags(pool.getSoftware().getPackages());
+            node.setTags(transform(pool.getSoftware().getPackages(), withPrefix("package:")));
 
             node.setAttributes(ImmutableMap.<String, String>builder()
                 .put("provider", pool.getProvider().getId())
@@ -126,5 +129,15 @@ public class RundeckServlet extends HttpServlet {
         }
 
         return nodes;
+    }
+
+    @VisibleForTesting
+    Function<String, String> withPrefix(final String prefix) {
+        return new Function<String, String>() {
+            @Override
+            public String apply(String value) {
+                return prefix + value;
+            }
+        };
     }
 }
