@@ -18,11 +18,9 @@
 
 package org.apache.provisionr.core.activities;
 
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.software.Repository;
 import org.apache.provisionr.api.software.Software;
-import org.apache.provisionr.core.activities.InstallRepositories;
-import org.apache.provisionr.core.activities.PuppetActivity;
 import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.Test;
 import static org.mockito.Mockito.mock;
@@ -41,11 +39,11 @@ public class InstallRepositoriesTest {
                 "[....]")
             .createRepository();
 
-        Pool pool = mock(Pool.class);
-        when(pool.getSoftware()).thenReturn(Software.builder().repository(repository).createSoftware());
+        PoolSpec poolSpec = mock(PoolSpec.class);
+        when(poolSpec.getSoftware()).thenReturn(Software.builder().repository(repository).createSoftware());
 
         PuppetActivity activity = new InstallRepositories();
-        String content = activity.createPuppetScript(pool, null);
+        String content = activity.createPuppetScript(poolSpec, null);
 
         assertThat(content).contains("apt::repository { \"bigtop\":\n" +
             "  content => \"deb http://bigtop.s3.amazonaws.com/releases/0.5.0/ubuntu/lucid/x86_64  bigtop contrib\\n\",\n" +

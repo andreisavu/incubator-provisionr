@@ -31,9 +31,9 @@ public final class CoreProcessVariables {
     public static final String PROVIDER = "provider";
 
     /**
-     * Pool configuration description
+     * PoolSpec configuration description
      *
-     * @see org.apache.provisionr.api.pool.Pool
+     * @see org.apache.provisionr.api.pool.PoolSpec
      */
     public static final String POOL = "pool";
 
@@ -45,7 +45,7 @@ public final class CoreProcessVariables {
     public static final String MACHINES = "machines";
 
     /**
-     * Pool status stored as process variable
+     * PoolSpec status stored as process variable
      * <p/>
      * This can be an arbitrary string. We will restrict the domain later on.
      */

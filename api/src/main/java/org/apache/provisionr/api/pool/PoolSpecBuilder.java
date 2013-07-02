@@ -18,16 +18,16 @@
 
 package org.apache.provisionr.api.pool;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import org.apache.provisionr.api.access.AdminAccess;
 import org.apache.provisionr.api.hardware.Hardware;
 import org.apache.provisionr.api.network.Network;
-import org.apache.provisionr.api.software.Software;
 import org.apache.provisionr.api.provider.Provider;
+import org.apache.provisionr.api.software.Software;
 import org.apache.provisionr.api.util.BuilderWithOptions;
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
-public class PoolBuilder extends BuilderWithOptions<PoolBuilder> {
+public class PoolSpecBuilder extends BuilderWithOptions<PoolSpecBuilder> {
 
     private Provider provider;
     private Network network;
@@ -42,55 +42,55 @@ public class PoolBuilder extends BuilderWithOptions<PoolBuilder> {
     private int bootstrapTimeInSeconds = 15 * 60;
 
     @Override
-    protected PoolBuilder getThis() {
+    protected PoolSpecBuilder getThis() {
         return this;
     }
 
-    public PoolBuilder provider(Provider provider) {
+    public PoolSpecBuilder provider(Provider provider) {
         this.provider = checkNotNull(provider, "provider is null");
         return this;
     }
 
-    public PoolBuilder network(Network network) {
+    public PoolSpecBuilder network(Network network) {
         this.network = checkNotNull(network, "network is null");
         return this;
     }
 
-    public PoolBuilder adminAccess(AdminAccess adminAccess) {
+    public PoolSpecBuilder adminAccess(AdminAccess adminAccess) {
         this.adminAccess = checkNotNull(adminAccess, "adminAccess is null");
         return this;
     }
 
-    public PoolBuilder software(Software software) {
+    public PoolSpecBuilder software(Software software) {
         this.software = checkNotNull(software, "software is null");
         return this;
     }
 
-    public PoolBuilder hardware(Hardware hardware) {
+    public PoolSpecBuilder hardware(Hardware hardware) {
         this.hardware = checkNotNull(hardware, "hardware is null");
         return this;
     }
 
-    public PoolBuilder minSize(int minSize) {
+    public PoolSpecBuilder minSize(int minSize) {
         checkArgument(minSize > 0, "minSize should be positive");
         this.minSize = minSize;
         return this;
     }
 
-    public PoolBuilder expectedSize(int expectedSize) {
+    public PoolSpecBuilder expectedSize(int expectedSize) {
         checkArgument(expectedSize > 0, "expectedSize should be positive");
         this.expectedSize = expectedSize;
         return this;
     }
 
-    public PoolBuilder bootstrapTimeInSeconds(int bootstrapTimeInSeconds) {
+    public PoolSpecBuilder bootstrapTimeInSeconds(int bootstrapTimeInSeconds) {
         checkArgument(bootstrapTimeInSeconds > 0, "bootstrapTimeInSeconds should be positive");
         this.bootstrapTimeInSeconds = bootstrapTimeInSeconds;
         return this;
     }
 
-    public Pool createPool() {
-        return new Pool(provider, network, adminAccess, software, hardware, minSize,
+    public PoolSpec createPool() {
+        return new PoolSpec(provider, network, adminAccess, software, hardware, minSize,
             expectedSize, bootstrapTimeInSeconds, buildOptions());
     }
 }

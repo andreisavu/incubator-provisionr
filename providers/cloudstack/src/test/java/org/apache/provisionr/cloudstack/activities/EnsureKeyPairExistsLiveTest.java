@@ -21,7 +21,7 @@ package org.apache.provisionr.cloudstack.activities;
 import java.io.IOException;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.provisionr.api.access.AdminAccess;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.cloudstack.core.KeyPairs;
 import org.apache.provisionr.core.CoreProcessVariables;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -61,13 +61,13 @@ public class EnsureKeyPairExistsLiveTest extends CloudStackActivityLiveTest<Ensu
             .createAdminAccess();
 
         DelegateExecution execution = mock(DelegateExecution.class);
-        Pool pool = mock(Pool.class);
+        PoolSpec poolSpec = mock(PoolSpec.class);
 
-        when(pool.getProvider()).thenReturn(provider);
-        when(pool.getAdminAccess()).thenReturn(adminAccess);
+        when(poolSpec.getProvider()).thenReturn(provider);
+        when(poolSpec.getAdminAccess()).thenReturn(adminAccess);
 
         when(execution.getProcessBusinessKey()).thenReturn(BUSINESS_KEY);
-        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(pool);
+        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(poolSpec);
 
         activity.execute(execution);
         assertKeyPairWasImportedAsExpected();

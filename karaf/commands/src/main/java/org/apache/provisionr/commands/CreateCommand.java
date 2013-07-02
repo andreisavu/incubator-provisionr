@@ -39,7 +39,7 @@ import org.apache.provisionr.api.Provisionr;
 import org.apache.provisionr.api.access.AdminAccess;
 import org.apache.provisionr.api.network.Network;
 import org.apache.provisionr.api.network.Rule;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.provider.Provider;
 import org.apache.provisionr.commands.predicates.ProvisionrPredicates;
 import org.apache.provisionr.core.templates.PoolTemplate;
@@ -141,13 +141,13 @@ public abstract class CreateCommand extends OsgiCommandSupport {
     }
 
     @VisibleForTesting
-    Pool applyTemplate(Pool pool) {
+    PoolSpec applyTemplate(PoolSpec poolSpec) {
         for (PoolTemplate candidate : templates) {
             if (candidate.getId().equalsIgnoreCase(template)) {
-                return candidate.apply(pool);
+                return candidate.apply(poolSpec);
             }
         }
-        throw new NoSuchElementException("No pool template found with name: " + template);
+        throw new NoSuchElementException("No poolSpec template found with name: " + template);
     }
 
     @VisibleForTesting

@@ -32,7 +32,7 @@ import java.util.NoSuchElementException;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.provisionr.api.Provisionr;
 import org.apache.provisionr.api.access.AdminAccess;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.provider.Provider;
 import org.apache.provisionr.api.provider.ProviderBuilder;
 import org.apache.provisionr.core.templates.PoolTemplate;
@@ -61,15 +61,15 @@ public class CreatePoolCommandTest {
     @Test
     public void testCreatePoolStartsTheManagementProcess() throws Exception {
         final Provisionr service = newProvisionrMockWithId(TEST_PROVISIONR_ID);
-        final Pool pool = mock(Pool.class);
+        final PoolSpec poolSpec = mock(PoolSpec.class);
 
         final List<Provisionr> services = ImmutableList.of(service);
         final List<PoolTemplate> templates = ImmutableList.of();
         CreatePoolCommand command = new CreatePoolCommand(services, templates,
             PATH_TO_PUBLIC_KEY, PATH_TO_PRIVATE_KEY) {
             @Override
-            protected Pool createPoolFromArgumentsAndServiceDefaults(Provisionr service) {
-                return pool;
+            protected PoolSpec createPoolSpecFromArgumentsAndServiceDefaults(Provisionr service) {
+                return poolSpec;
             }
         };
         command.setId(TEST_PROVISIONR_ID);
@@ -78,8 +78,8 @@ public class CreatePoolCommandTest {
         CommandSession session = mock(CommandSession.class);
         String output = (String) command.execute(session);
 
-        verify(service).startPoolManagementProcess(TEST_BUSINESS_KEY, pool);
-        assertThat(output).isEqualTo("Pool management process started (id: null)");
+        verify(service).startPoolManagementProcess(TEST_BUSINESS_KEY, poolSpec);
+        assertThat(output).isEqualTo("Pool management process started (key: j-123, provider: amazon)");
     }
 
     @Test(expected = NoSuchElementException.class)
@@ -106,10 +106,10 @@ public class CreatePoolCommandTest {
         Provider provider = newProviderMockWithBuilder();
         when(service.getDefaultProvider()).thenReturn(Optional.of(provider));
 
-        Pool pool = command.createPoolFromArgumentsAndServiceDefaults(service);
+        PoolSpec poolSpec = command.createPoolSpecFromArgumentsAndServiceDefaults(service);
 
-        assertThat(pool.getSoftware().getRepositories()).hasSize(1);
-        assertThat(pool.getSoftware().getPackages()).contains("package-1a");
+        assertThat(poolSpec.getSoftware().getRepositories()).hasSize(1);
+        assertThat(poolSpec.getSoftware().getPackages()).contains("package-1a");
     }
 
     @Test
@@ -123,7 +123,7 @@ public class CreatePoolCommandTest {
         Provider provider = newProviderMockWithBuilder();
         when(service.getDefaultProvider()).thenReturn(Optional.of(provider));
 
-        command.createPoolFromArgumentsAndServiceDefaults(service);
+        command.createPoolSpecFromArgumentsAndServiceDefaults(service);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Map<String, String>> argument = (ArgumentCaptor<Map<String, String>>) (Object)
@@ -144,29 +144,29 @@ public class CreatePoolCommandTest {
         Provider provider = newProviderMockWithBuilder();
         when(service.getDefaultProvider()).thenReturn(Optional.of(provider));
 
-        Pool pool = command.createPoolFromArgumentsAndServiceDefaults(service);
-        assertThat(pool.getHardware().getBlockDevices()).isEmpty();
+        PoolSpec poolSpec = command.createPoolSpecFromArgumentsAndServiceDefaults(service);
+        assertThat(poolSpec.getHardware().getBlockDevices()).isEmpty();
 
         command.setBlockDeviceOptions(Lists.newArrayList("/dev/sda2:8", "/dev/sda9:2"));
-        pool = command.createPoolFromArgumentsAndServiceDefaults(service);
-        assertThat(pool.getHardware().getBlockDevices()).hasSize(2);
-        assertThat(pool.getHardware().getBlockDevices().get(0).getSize()).isEqualTo(8);
-        assertThat(pool.getHardware().getBlockDevices().get(0).getName()).isEqualTo("/dev/sda2");
-        assertThat(pool.getHardware().getBlockDevices().get(1).getSize()).isEqualTo(2);
-        assertThat(pool.getHardware().getBlockDevices().get(1).getName()).isEqualTo("/dev/sda9");
+        poolSpec = command.createPoolSpecFromArgumentsAndServiceDefaults(service);
+        assertThat(poolSpec.getHardware().getBlockDevices()).hasSize(2);
+        assertThat(poolSpec.getHardware().getBlockDevices().get(0).getSize()).isEqualTo(8);
+        assertThat(poolSpec.getHardware().getBlockDevices().get(0).getName()).isEqualTo("/dev/sda2");
+        assertThat(poolSpec.getHardware().getBlockDevices().get(1).getSize()).isEqualTo(2);
+        assertThat(poolSpec.getHardware().getBlockDevices().get(1).getName()).isEqualTo("/dev/sda9");
 
         command.setBlockDeviceOptions(Lists.newArrayList("/dev/sda1:7"));
-        pool = command.createPoolFromArgumentsAndServiceDefaults(service);
-        assertThat(pool.getHardware().getBlockDevices()).hasSize(1);
-        assertThat(pool.getHardware().getBlockDevices().get(0).getSize()).isEqualTo(7);
+        poolSpec = command.createPoolSpecFromArgumentsAndServiceDefaults(service);
+        assertThat(poolSpec.getHardware().getBlockDevices()).hasSize(1);
+        assertThat(poolSpec.getHardware().getBlockDevices().get(0).getSize()).isEqualTo(7);
 
         command.setBlockDeviceOptions(Lists.newArrayList("this=breaks"));
         exception.expect(IllegalArgumentException.class);
-        pool = command.createPoolFromArgumentsAndServiceDefaults(service);
+        poolSpec = command.createPoolSpecFromArgumentsAndServiceDefaults(service);
 
         command.setBlockDeviceOptions(Lists.newArrayList("/dev/sda1"));
         exception.expect(IllegalArgumentException.class);
-        pool = command.createPoolFromArgumentsAndServiceDefaults(service);
+        poolSpec = command.createPoolSpecFromArgumentsAndServiceDefaults(service);
 
     }
 

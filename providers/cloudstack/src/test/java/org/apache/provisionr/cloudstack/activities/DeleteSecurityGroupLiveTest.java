@@ -21,7 +21,7 @@ package org.apache.provisionr.cloudstack.activities;
 import java.util.NoSuchElementException;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.provisionr.api.network.Network;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.cloudstack.core.SecurityGroups;
 import org.apache.provisionr.core.CoreProcessVariables;
 import org.junit.After;
@@ -57,12 +57,12 @@ public class DeleteSecurityGroupLiveTest extends CloudStackActivityLiveTest<Dele
         DelegateExecution execution = mock(DelegateExecution.class);
         final Network network = Network.builder().createNetwork();
 
-        Pool pool = mock(Pool.class);
+        PoolSpec poolSpec = mock(PoolSpec.class);
 
-        when(pool.getProvider()).thenReturn(provider);
-        when(pool.getNetwork()).thenReturn(network);
+        when(poolSpec.getProvider()).thenReturn(provider);
+        when(poolSpec.getNetwork()).thenReturn(network);
 
-        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(pool);
+        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(poolSpec);
         when(execution.getProcessBusinessKey()).thenReturn(BUSINESS_KEY);
 
         SecurityGroups.createSecurityGroup(context.getApi(), SECURITY_GROUP_NAME);

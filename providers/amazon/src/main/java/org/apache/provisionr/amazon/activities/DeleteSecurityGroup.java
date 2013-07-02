@@ -24,7 +24,7 @@ import com.amazonaws.services.ec2.model.DeleteSecurityGroupRequest;
 import org.apache.provisionr.amazon.core.ErrorCodes;
 import org.apache.provisionr.amazon.core.ProviderClientCache;
 import org.apache.provisionr.amazon.core.SecurityGroups;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import com.google.common.base.Throwables;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.slf4j.Logger;
@@ -39,7 +39,7 @@ public class DeleteSecurityGroup extends AmazonActivity {
     }
 
     @Override
-    public void execute(AmazonEC2 client, Pool pool, DelegateExecution execution) {
+    public void execute(AmazonEC2 client, PoolSpec poolSpec, DelegateExecution execution) {
         final String groupName = SecurityGroups.formatNameFromBusinessKey(execution.getProcessBusinessKey());
         try {
             LOG.info(">> Deleting Security Group {}", groupName);

@@ -18,7 +18,7 @@
 
 package org.apache.provisionr.cloudstack.activities;
 
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.cloudstack.core.KeyPairs;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.jclouds.cloudstack.CloudStackClient;
@@ -30,7 +30,7 @@ public class DeleteKeyPair extends CloudStackActivity {
     private static final Logger LOG = LoggerFactory.getLogger(DeleteKeyPair.class);
 
     @Override
-    public void execute(CloudStackClient cloudStackClient, Pool pool, DelegateExecution execution) {
+    public void execute(CloudStackClient cloudStackClient, PoolSpec poolSpec, DelegateExecution execution) {
         String keyName = KeyPairs.formatNameFromBusinessKey(execution.getProcessBusinessKey());
         LOG.info("Deleting Admin Access Key pair {}", keyName);
         cloudStackClient.getSSHKeyPairClient().deleteSSHKeyPair(keyName);

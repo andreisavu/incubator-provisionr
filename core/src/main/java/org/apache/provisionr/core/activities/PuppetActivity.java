@@ -28,7 +28,7 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 import org.apache.provisionr.api.access.AdminAccess;
 import org.apache.provisionr.api.pool.Machine;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.core.CoreProcessVariables;
 import org.apache.provisionr.core.Ssh;
 import org.slf4j.Logger;
@@ -63,26 +63,26 @@ public abstract class PuppetActivity implements JavaDelegate {
     /**
      * This method creates a Puppet script for remote execution
      */
-    public abstract String createPuppetScript(Pool pool, Machine machine);
+    public abstract String createPuppetScript(PoolSpec poolSpec, Machine machine);
 
     /**
      * Override this method to change the credentials used for SSH access
      */
-    public AdminAccess overrideAdminAccess(Pool pool) {
-        return pool.getAdminAccess();
+    public AdminAccess overrideAdminAccess(PoolSpec poolSpec) {
+        return poolSpec.getAdminAccess();
     }
 
     /**
      * Map of additional files to create on the remote machine. Contains pairs of (remotePath, content)
      */
-    public Map<String, String> createAdditionalFiles(Pool pool, Machine machine) {
+    public Map<String, String> createAdditionalFiles(PoolSpec poolSpec, Machine machine) {
         return ImmutableMap.of();
     }
 
     @Override
     public void execute(DelegateExecution execution) throws IOException {
-        Pool pool = (Pool) execution.getVariable(CoreProcessVariables.POOL);
-        checkNotNull(pool, "Please add the pool description as a process " +
+        PoolSpec poolSpec = (PoolSpec) execution.getVariable(CoreProcessVariables.POOL);
+        checkNotNull(poolSpec, "Please add the poolSpec description as a process " +
             "variable with the name '%s'.", CoreProcessVariables.POOL);
 
         Machine machine = (Machine) execution.getVariable("machine");
@@ -90,14 +90,14 @@ public abstract class PuppetActivity implements JavaDelegate {
 
         LOG.info(">> Connecting to machine {} to run puppet script", machine);
 
-        SSHClient client = Ssh.newClient(machine, overrideAdminAccess(pool));
+        SSHClient client = Ssh.newClient(machine, overrideAdminAccess(poolSpec));
         try {
-            for (Map.Entry<String, String> entry : createAdditionalFiles(pool, machine).entrySet()) {
+            for (Map.Entry<String, String> entry : createAdditionalFiles(poolSpec, machine).entrySet()) {
                 Ssh.createFile(client, /* content = */ entry.getValue(), 0600, /* destination= */ entry.getKey());
             }
 
             final String destination = "/tmp/" + remoteFileName + ".pp";
-            Ssh.createFile(client, createPuppetScript(pool, machine), 0600, destination);
+            Ssh.createFile(client, createPuppetScript(poolSpec, machine), 0600, destination);
 
             Session session = client.startSession();
             try {

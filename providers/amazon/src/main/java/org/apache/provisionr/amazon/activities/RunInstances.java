@@ -44,7 +44,7 @@ import org.apache.provisionr.amazon.core.SecurityGroups;
 import org.apache.provisionr.amazon.options.ProviderOptions;
 import org.apache.provisionr.amazon.options.SoftwareOptions;
 import org.apache.provisionr.api.hardware.BlockDevice;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.provider.Provider;
 
 public abstract class RunInstances extends AmazonActivity {
@@ -57,31 +57,31 @@ public abstract class RunInstances extends AmazonActivity {
         super(providerClientCache);
     }
 
-    protected RunInstancesRequest createOnDemandInstancesRequest(Pool pool, DelegateExecution execution)
+    protected RunInstancesRequest createOnDemandInstancesRequest(PoolSpec poolSpec, DelegateExecution execution)
         throws IOException {
-        return (RunInstancesRequest) createRequest(pool, execution, false);
+        return (RunInstancesRequest) createRequest(poolSpec, execution, false);
     }
 
-    protected RequestSpotInstancesRequest createSpotInstancesRequest(Pool pool, DelegateExecution execution)
+    protected RequestSpotInstancesRequest createSpotInstancesRequest(PoolSpec poolSpec, DelegateExecution execution)
         throws IOException {
-        return (RequestSpotInstancesRequest) createRequest(pool, execution, true);
+        return (RequestSpotInstancesRequest) createRequest(poolSpec, execution, true);
     }
 
-    private AmazonWebServiceRequest createRequest(Pool pool, DelegateExecution execution, boolean spot)
+    private AmazonWebServiceRequest createRequest(PoolSpec poolSpec, DelegateExecution execution, boolean spot)
         throws IOException {
         final String businessKey = execution.getProcessBusinessKey();
 
         final String securityGroupName = SecurityGroups.formatNameFromBusinessKey(businessKey);
         final String keyPairName = KeyPairs.formatNameFromBusinessKey(businessKey);
 
-        final String instanceType = pool.getHardware().getType();
+        final String instanceType = poolSpec.getHardware().getType();
         final String imageId = getImageIdFromPoolConfigurationOrQueryImageTable(
-            pool, pool.getProvider(), instanceType);
+            poolSpec, poolSpec.getProvider(), instanceType);
 
         final String userData = Resources.toString(Resources.getResource(RunInstances.class,
             "/org/apache/provisionr/amazon/userdata.sh"), Charsets.UTF_8);
 
-        List<BlockDevice> blockDevices = pool.getHardware().getBlockDevices();
+        List<BlockDevice> blockDevices = poolSpec.getHardware().getBlockDevices();
         List<BlockDeviceMapping> blockDeviceMappings = Lists.newArrayList();
         if (blockDevices != null && blockDevices.size() > 0) {
             for (BlockDevice device : blockDevices) {
@@ -98,7 +98,7 @@ public abstract class RunInstances extends AmazonActivity {
             Calendar validUntil = Calendar.getInstance();
             validUntil.add(Calendar.MINUTE, 10);
 
-            final String spotPrice = checkNotNull(pool.getProvider().getOption(ProviderOptions.SPOT_BID),
+            final String spotPrice = checkNotNull(poolSpec.getProvider().getOption(ProviderOptions.SPOT_BID),
                 "The bid for spot instances was not specified");
 
             LaunchSpecification ls = new LaunchSpecification()
@@ -113,7 +113,7 @@ public abstract class RunInstances extends AmazonActivity {
                 .withSpotPrice(spotPrice)
                 .withLaunchSpecification(ls)
                 .withLaunchGroup(businessKey)
-                .withInstanceCount(pool.getExpectedSize())
+                .withInstanceCount(poolSpec.getExpectedSize())
                 .withType(SpotInstanceType.OneTime)
                 .withValidUntil(validUntil.getTime());
 
@@ -125,16 +125,16 @@ public abstract class RunInstances extends AmazonActivity {
                 .withInstanceType(instanceType)
                 .withImageId(imageId)
                 .withBlockDeviceMappings(blockDeviceMappings)
-                .withMinCount(pool.getMinSize())
-                .withMaxCount(pool.getExpectedSize())
+                .withMinCount(poolSpec.getMinSize())
+                .withMaxCount(poolSpec.getExpectedSize())
                 .withUserData(Base64.encodeBytes(userData.getBytes(Charsets.UTF_8)));
         }
     }
 
     private String getImageIdFromPoolConfigurationOrQueryImageTable(
-        Pool pool, Provider provider, String instanceType
+        PoolSpec poolSpec, Provider provider, String instanceType
     ) {
-        final String imageId = pool.getSoftware().getImageId();
+        final String imageId = poolSpec.getSoftware().getImageId();
         if (!Strings.isNullOrEmpty(imageId)) {
             return "default".equals(imageId) ? DEFAULT_AMI_ID : imageId;
         }

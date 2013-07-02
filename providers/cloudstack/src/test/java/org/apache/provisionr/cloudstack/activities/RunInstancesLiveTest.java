@@ -25,7 +25,7 @@ import org.apache.provisionr.api.access.AdminAccess;
 import org.apache.provisionr.api.hardware.Hardware;
 import org.apache.provisionr.api.network.Network;
 import org.apache.provisionr.api.network.Rule;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.software.Software;
 import org.apache.provisionr.cloudstack.ProviderOptions;
 import org.apache.provisionr.cloudstack.core.VirtualMachines;
@@ -44,7 +44,7 @@ public class RunInstancesLiveTest extends CloudStackActivityLiveTest<RunInstance
     private static final Logger LOG = LoggerFactory.getLogger(RunInstancesLiveTest.class);
 
     private DelegateExecution execution;
-    private Pool pool;
+    private PoolSpec poolSpec;
 
     @Override
     @Before
@@ -54,7 +54,7 @@ public class RunInstancesLiveTest extends CloudStackActivityLiveTest<RunInstance
         logKeyPairs();
         logVirtualMachines();
         execution = mock(DelegateExecution.class);
-        pool = mock(Pool.class);
+        poolSpec = mock(PoolSpec.class);
 
         final AdminAccess adminAccess = AdminAccess.builder()
             .username("admin")
@@ -73,15 +73,15 @@ public class RunInstancesLiveTest extends CloudStackActivityLiveTest<RunInstance
         Map<String, String> options = ImmutableMap.of(ProviderOptions.ZONE_ID,
             getProviderProperty("zoneId"));
 
-        when(pool.getProvider()).thenReturn(provider);
-        when(pool.getAdminAccess()).thenReturn(adminAccess);
-        when(pool.getNetwork()).thenReturn(network);
-        when(pool.getHardware()).thenReturn(hardware);
-        when(pool.getSoftware()).thenReturn(software);
-        when(pool.getOptions()).thenReturn(options);
+        when(poolSpec.getProvider()).thenReturn(provider);
+        when(poolSpec.getAdminAccess()).thenReturn(adminAccess);
+        when(poolSpec.getNetwork()).thenReturn(network);
+        when(poolSpec.getHardware()).thenReturn(hardware);
+        when(poolSpec.getSoftware()).thenReturn(software);
+        when(poolSpec.getOptions()).thenReturn(options);
 
         when(execution.getProcessBusinessKey()).thenReturn(BUSINESS_KEY);
-        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(pool);
+        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(poolSpec);
 
         new EnsureSecurityGroupExists().execute(execution);
         new EnsureKeyPairExists().execute(execution);

@@ -33,7 +33,7 @@ import org.apache.felix.gogo.commands.Option;
 import org.apache.provisionr.api.Provisionr;
 import org.apache.provisionr.api.hardware.BlockDevice;
 import org.apache.provisionr.api.hardware.Hardware;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.provider.Provider;
 import org.apache.provisionr.api.software.Software;
 import org.apache.provisionr.core.templates.PoolTemplate;
@@ -86,16 +86,19 @@ public class CreatePoolCommand extends CreateCommand {
         checkArgument(size > 0, "size should be a positive integer");
 
         Provisionr service = getService();
-        final Pool pool = createPoolFromArgumentsAndServiceDefaults(service);
-        final String processInstanceId = service.startPoolManagementProcess(key, pool);
-        return String.format("Pool management process started (id: %s)", processInstanceId);
+
+        final PoolSpec spec = createPoolSpecFromArgumentsAndServiceDefaults(service);
+        service.startPoolManagementProcess(key, spec);
+
+        return String.format("Pool management process started (key: %s, provider: %s)", key, service.getId());
     }
 
-    Pool createPoolFromArgumentsAndServiceDefaults(Provisionr service) {
+    PoolSpec createPoolSpecFromArgumentsAndServiceDefaults(Provisionr service) {
         final Optional<Provider> defaultProvider = getDefaultProvider(service);
 
         /* append the provider options that were passed in and rebuild the default provider */
         // TODO: this currently does not support overriding default options, it will throw an exception
+
         Map<String, String> options = ImmutableMap.<String, String>builder()
             .putAll(defaultProvider.get().getOptions())     // default options
             .putAll(parseProviderOptions(providerOptions))  // options added by the user
@@ -113,7 +116,7 @@ public class CreatePoolCommand extends CreateCommand {
             .blockDevices(parseBlockDeviceOptions(blockDeviceOptions))
             .createHardware();
 
-        final Pool pool = Pool.builder()
+        final PoolSpec poolSpec = PoolSpec.builder()
             .provider(provider)
             .hardware(hardware)
             .software(software)
@@ -124,7 +127,7 @@ public class CreatePoolCommand extends CreateCommand {
             .bootstrapTimeInSeconds(getBootstrapTimeout())
             .createPool();
 
-        return getTemplate() != null ? applyTemplate(pool) : pool;
+        return getTemplate() != null ? applyTemplate(poolSpec) : poolSpec;
     }
 
     private List<BlockDevice> parseBlockDeviceOptions(List<String> options) {

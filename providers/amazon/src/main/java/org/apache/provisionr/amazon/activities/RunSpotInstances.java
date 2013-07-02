@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.provisionr.amazon.ProcessVariables;
 import org.apache.provisionr.amazon.core.ProviderClientCache;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +50,7 @@ public class RunSpotInstances extends RunInstances {
     }
 
     @Override
-    public void execute(AmazonEC2 client, Pool pool, DelegateExecution execution) throws IOException {
+    public void execute(AmazonEC2 client, PoolSpec poolSpec, DelegateExecution execution) throws IOException {
         /* before sending a new request, we check to see if we already registered
            a launch group with the process ID, if yes, we don't re-send the request */
         final String businessKey = execution.getProcessBusinessKey();
@@ -80,7 +80,7 @@ public class RunSpotInstances extends RunInstances {
             }
         }
 
-        final RequestSpotInstancesRequest request = createSpotInstancesRequest(pool, execution);
+        final RequestSpotInstancesRequest request = createSpotInstancesRequest(poolSpec, execution);
         execution.setVariable(ProcessVariables.SPOT_REQUESTS_SENT, true);
         RequestSpotInstancesResult requestResult = client.requestSpotInstances(request);
         List<String> spotInstanceRequestIds = collectSpotInstanceRequestIds(requestResult.getSpotInstanceRequests());

@@ -53,7 +53,7 @@ public class DestroyPoolCommandTest {
         CommandSession session = mock(CommandSession.class);
         command.execute(session);
 
-        verify(service).destroyPool(TEST_BUSINESS_KEY);
+        verify(service).triggerPoolManagementProcessTermination(TEST_BUSINESS_KEY);
     }
 
     @Test(expected = NoSuchElementException.class)

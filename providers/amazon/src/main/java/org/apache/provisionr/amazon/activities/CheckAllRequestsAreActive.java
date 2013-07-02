@@ -24,7 +24,7 @@ import com.google.common.base.Predicate;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.provisionr.amazon.ProcessVariables;
 import org.apache.provisionr.amazon.core.ProviderClientCache;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 
 public class CheckAllRequestsAreActive extends AllSpotRequestsMatchPredicate {
 
@@ -46,7 +46,7 @@ public class CheckAllRequestsAreActive extends AllSpotRequestsMatchPredicate {
     }
 
     @Override
-    public void execute(AmazonEC2 client, Pool pool, DelegateExecution execution) {
-        super.execute(client, pool, execution);
+    public void execute(AmazonEC2 client, PoolSpec poolSpec, DelegateExecution execution) {
+        super.execute(client, poolSpec, execution);
     }
 }

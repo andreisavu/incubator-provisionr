@@ -19,7 +19,7 @@
 package org.apache.provisionr.cloudstack.activities;
 
 import org.apache.provisionr.api.network.Network;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.cloudstack.core.SecurityGroups;
 import static com.google.common.base.Preconditions.checkNotNull;
 import org.activiti.engine.delegate.DelegateExecution;
@@ -37,8 +37,8 @@ public class EnsureSecurityGroupExists extends CloudStackActivity {
     private static final Logger LOG = LoggerFactory.getLogger(EnsureSecurityGroupExists.class);
 
     @Override
-    public void execute(CloudStackClient cloudStackClient, Pool pool, DelegateExecution execution) {
-        Network network = checkNotNull(pool.getNetwork(), "Please configure a network for the pool");
+    public void execute(CloudStackClient cloudStackClient, PoolSpec poolSpec, DelegateExecution execution) {
+        Network network = checkNotNull(poolSpec.getNetwork(), "Please configure a network for the poolSpec");
         String securityGroupName = SecurityGroups.formatNameFromBusinessKey(execution.getProcessBusinessKey());
         SecurityGroup securityGroup;
         try {

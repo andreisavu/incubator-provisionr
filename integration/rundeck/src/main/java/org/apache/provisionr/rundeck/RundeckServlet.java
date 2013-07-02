@@ -37,7 +37,7 @@ import javax.xml.bind.Marshaller;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.apache.provisionr.api.pool.Machine;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.core.CoreProcessVariables;
 
 public class RundeckServlet extends HttpServlet {
@@ -61,21 +61,24 @@ public class RundeckServlet extends HttpServlet {
 
     @VisibleForTesting
     void writeRundeckResourceModelXmlTo(PrintWriter writer) {
+        // TODO: rewrite this to iterate through the list of Provisionr's
+        // and fetch all pool instances for each one
+
         final List<ProcessInstance> processes = processEngine.getRuntimeService()
             .createProcessInstanceQuery().list();
 
         Project project = new Project();
         for (ProcessInstance instance : processes) {
-            final Pool pool = (Pool) processEngine.getRuntimeService()
+            final PoolSpec poolSpec = (PoolSpec) processEngine.getRuntimeService()
                 .getVariable(instance.getId(), CoreProcessVariables.POOL);
-            if (pool == null) {
+            if (poolSpec == null) {
                 continue; /* skip - this process is not a provisionr process */
             }
 
             final String businessKey = (String) processEngine.getRuntimeService()
                 .getVariable(instance.getId(), CoreProcessVariables.POOL_BUSINESS_KEY);
             if (!Objects.equal(instance.getBusinessKey(), businessKey)) {
-                continue; /* ignore - this is a process started by the main pool management process */
+                continue; /* ignore - this is a process started by the main poolSpec management process */
             }
 
             @SuppressWarnings("unchecked")
@@ -85,7 +88,7 @@ public class RundeckServlet extends HttpServlet {
                 continue;   /* the list of machines is not yet available */
             }
 
-            project.setNodes(transformMachinesToRundeckNodes(businessKey, pool, machines));
+            project.setNodes(transformMachinesToRundeckNodes(businessKey, poolSpec, machines));
         }
 
         try {
@@ -97,26 +100,26 @@ public class RundeckServlet extends HttpServlet {
     }
 
     @VisibleForTesting
-    List<Node> transformMachinesToRundeckNodes(String businessKey, Pool pool, List<Machine> machines) {
+    List<Node> transformMachinesToRundeckNodes(String poolKey, PoolSpec poolSpec, List<Machine> machines) {
         List<Node> nodes = Lists.newArrayList();
 
         for (Machine machine : machines) {
             Node node = new Node(machine.getExternalId(), machine.getPublicDnsName(),
-                pool.getAdminAccess().getUsername());
+                poolSpec.getAdminAccess().getUsername());
 
-            node.setTags(pool.getSoftware().getPackages());
+            node.setTags(poolSpec.getSoftware().getPackages());
 
             node.setAttributes(ImmutableMap.<String, String>builder()
-                .put("provider", pool.getProvider().getId())
-                .put("key", businessKey)
+                .put("provider", poolSpec.getProvider().getId())
+                .put("key", poolKey)
                 .put("publicIp", machine.getPublicIp())
                 .put("privateHostname", machine.getPrivateDnsName())
                 .put("privateIp", machine.getPrivateIp())
-                .put("hardwareType", pool.getHardware().getType())
+                .put("hardwareType", poolSpec.getHardware().getType())
                 .build());
 
-            if (pool.getProvider().getOptions().containsKey("region")) {
-                node.addAttribute("region", pool.getProvider().getOption("region"));
+            if (poolSpec.getProvider().getOptions().containsKey("region")) {
+                node.addAttribute("region", poolSpec.getProvider().getOption("region"));
             }
 
             nodes.add(node);

@@ -20,7 +20,7 @@ package org.apache.provisionr.cloudstack;
 
 /**
  * {@link org.apache.provisionr.api.network.Network Network} configuration is passed via the
- * {@link org.apache.provisionr.api.pool.Pool Pool} object. This class stores names for those options.
+ * {@link org.apache.provisionr.api.pool.PoolSpec PoolSpec} object. This class stores names for those options.
  */
 public final class NetworkOptions {
 

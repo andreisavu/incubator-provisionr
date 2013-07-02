@@ -20,7 +20,7 @@ package org.apache.provisionr.cloudstack.activities;
 
 import java.util.NoSuchElementException;
 import org.activiti.engine.delegate.DelegateExecution;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.cloudstack.NetworkOptions;
 import org.apache.provisionr.cloudstack.ProcessVariables;
 import org.apache.provisionr.cloudstack.core.Networks;
@@ -43,7 +43,7 @@ public class EnsureNetworkExistsLiveTest extends CloudStackActivityLiveTest<Ensu
     private final static Logger LOG = LoggerFactory.getLogger(EnsureNetworkExistsLiveTest.class);
     private final String networkName = Networks.formatNameFromBusinessKey(BUSINESS_KEY);
     private DelegateExecution execution;
-    private Pool pool;
+    private PoolSpec poolSpec;
     private ProcessVariablesCollector collector;
 
     @Override
@@ -56,12 +56,12 @@ public class EnsureNetworkExistsLiveTest extends CloudStackActivityLiveTest<Ensu
 
     private void initMocks() {
         execution = mock(DelegateExecution.class);
-        pool = mock(Pool.class);
+        poolSpec = mock(PoolSpec.class);
 
-        when(pool.getProvider()).thenReturn(provider);
-        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(pool);
+        when(poolSpec.getProvider()).thenReturn(provider);
+        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(poolSpec);
         when(execution.getProcessBusinessKey()).thenReturn(BUSINESS_KEY);
-        when(pool.getNetwork()).thenReturn(org.apache.provisionr.api.network.Network.builder()
+        when(poolSpec.getNetwork()).thenReturn(org.apache.provisionr.api.network.Network.builder()
             .type("provided")
             .createNetwork());
         collector = new ProcessVariablesCollector();
@@ -114,12 +114,12 @@ public class EnsureNetworkExistsLiveTest extends CloudStackActivityLiveTest<Ensu
 
         execution.setVariable(ProcessVariables.NETWORK_ID, networkId);
 
-        when(pool.getNetwork()).thenReturn(network);
+        when(poolSpec.getNetwork()).thenReturn(network);
         when(mockClient.getNetworkClient()).thenReturn(mockNetworkClient);
         when(mockNetworkClient.getNetwork(networkId)).thenReturn(mockNetwork);
         when(mockNetwork.getId()).thenReturn(networkId);
 
-        activity.execute(mockClient, pool, execution);
+        activity.execute(mockClient, poolSpec, execution);
         assertThat(collector.getVariable(ProcessVariables.NETWORK_ID)).isEqualTo(networkId);
     }
 }

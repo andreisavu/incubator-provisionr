@@ -26,7 +26,7 @@ import com.amazonaws.services.ec2.model.ImportKeyPairResult;
 import org.apache.provisionr.amazon.core.ErrorCodes;
 import org.apache.provisionr.amazon.core.KeyPairs;
 import org.apache.provisionr.amazon.core.ProviderClientCache;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,17 +40,17 @@ public class EnsureKeyPairExists extends AmazonActivity {
     }
 
     @Override
-    public void execute(AmazonEC2 client, Pool pool, DelegateExecution execution) {
+    public void execute(AmazonEC2 client, PoolSpec poolSpec, DelegateExecution execution) {
         String keyName = KeyPairs.formatNameFromBusinessKey(execution.getProcessBusinessKey());
         LOG.info(">> Importing admin access key pair as {}", keyName);
 
-        final String publicKey = pool.getAdminAccess().getPublicKey();
+        final String publicKey = poolSpec.getAdminAccess().getPublicKey();
         try {
             importPoolPublicKeyPair(client, keyName, publicKey);
 
         } catch (AmazonServiceException e) {
             if (e.getErrorCode().equals(ErrorCodes.DUPLICATE_KEYPAIR)) {
-                LOG.info("<< Duplicate key pair found. Re-importing from pool description");
+                LOG.info("<< Duplicate key pair found. Re-importing from poolSpec description");
 
                 client.deleteKeyPair(new DeleteKeyPairRequest().withKeyName(keyName));
                 importPoolPublicKeyPair(client, keyName, publicKey);

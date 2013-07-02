@@ -19,7 +19,7 @@
 package org.apache.provisionr.cloudstack.activities;
 
 import org.activiti.engine.delegate.DelegateExecution;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.cloudstack.ProviderOptions;
 import org.apache.provisionr.cloudstack.core.KeyPairs;
 import org.apache.provisionr.cloudstack.core.Networks;
@@ -34,14 +34,14 @@ public class RunInstances extends CloudStackActivity {
     public static final Logger LOG = LoggerFactory.getLogger(RunInstances.class);
 
     @Override
-    public void execute(CloudStackClient cloudStackClient, Pool pool, DelegateExecution execution) {
+    public void execute(CloudStackClient cloudStackClient, PoolSpec poolSpec, DelegateExecution execution) {
         final String businessKey = execution.getProcessBusinessKey();
 
         final String keyPairName = KeyPairs.formatNameFromBusinessKey(businessKey);
 
-        final String zoneId = pool.getOptions().get(ProviderOptions.ZONE_ID);
-        final String templateId = pool.getSoftware().getImageId();
-        final String serviceOffering = pool.getHardware().getType();
+        final String zoneId = poolSpec.getOptions().get(ProviderOptions.ZONE_ID);
+        final String templateId = poolSpec.getSoftware().getImageId();
+        final String serviceOffering = poolSpec.getHardware().getType();
 
         LOG.info("Starting instances!");
 

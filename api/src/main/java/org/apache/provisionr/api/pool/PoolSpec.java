@@ -30,10 +30,10 @@ import org.apache.provisionr.api.provider.Provider;
 import org.apache.provisionr.api.software.Software;
 import org.apache.provisionr.api.util.WithOptions;
 
-public class Pool extends WithOptions {
+public class PoolSpec extends WithOptions {
 
-    public static PoolBuilder builder() {
-        return new PoolBuilder();
+    public static PoolSpecBuilder builder() {
+        return new PoolSpecBuilder();
     }
 
     private final Provider provider;
@@ -48,9 +48,9 @@ public class Pool extends WithOptions {
 
     private final int bootstrapTimeInSeconds;
 
-    Pool(Provider provider, Network network, AdminAccess adminAccess, Software software, Hardware hardware,
-         int minSize, int expectedSize, int bootstrapTimeInSeconds,
-         Map<String, String> options
+    PoolSpec(Provider provider, Network network, AdminAccess adminAccess, Software software, Hardware hardware,
+             int minSize, int expectedSize, int bootstrapTimeInSeconds,
+             Map<String, String> options
     ) {
         super(options);
 
@@ -103,7 +103,7 @@ public class Pool extends WithOptions {
         return bootstrapTimeInSeconds;
     }
 
-    public PoolBuilder toBuilder() {
+    public PoolSpecBuilder toBuilder() {
         return builder().provider(provider).network(network).adminAccess(adminAccess).software(software)
             .hardware(hardware).minSize(minSize).expectedSize(expectedSize)
             .bootstrapTimeInSeconds(bootstrapTimeInSeconds).options(getOptions());
@@ -124,7 +124,7 @@ public class Pool extends WithOptions {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Pool other = (Pool) obj;
+        final PoolSpec other = (PoolSpec) obj;
         return Objects.equal(this.provider, other.provider) && Objects.equal(this.network, other.network)
             && Objects.equal(this.adminAccess, other.adminAccess) && Objects.equal(this.software, other.software)
             && Objects.equal(this.hardware, other.hardware) && Objects.equal(this.minSize, other.minSize)
@@ -136,7 +136,7 @@ public class Pool extends WithOptions {
     @Override
     @Generated("intellij")
     public String toString() {
-        return "Pool{" +
+        return "PoolSpec{" +
             "provider=" + provider +
             ", network=" + network +
             ", adminAccess=" + adminAccess +

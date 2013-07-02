@@ -20,8 +20,8 @@ package org.apache.provisionr.api;
 
 import com.google.common.base.Optional;
 import java.util.List;
-import org.apache.provisionr.api.pool.Machine;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolInstance;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.provider.Provider;
 
 public interface Provisionr {
@@ -41,37 +41,32 @@ public interface Provisionr {
     public Optional<Provider> getDefaultProvider();
 
     /**
-     * Start a provisioning process based on the pool description
+     * Start a provisioning process based on the pool specification
      * <p/>
      * This process will run until the pool is destroyed
      *
-     * @param businessKey external process ID (e.g. job ID, business key)
-     * @param pool        pool description
-     * @return internal process ID
+     * @param poolKey  user defined unique pool instance identifier
+     * @param poolSpec pool specification
      */
-    String startPoolManagementProcess(String businessKey, Pool pool);
-
+    void startPoolManagementProcess(String poolKey, PoolSpec poolSpec);
 
     /**
-     * Retrieve the list of machines for a pool or an empty list
+     * Get the pool instance object for a specific key
      *
-     * @param businessKey external pool ID (e.g. job ID)
-     * @return list of running machines or empty
+     * @param poolKey user defined unique pool instance identifier
+     * @return
      */
-    List<Machine> getMachines(String businessKey);
+    PoolInstance getPoolInstance(String poolKey);
 
     /**
-     * Get current pool status
-     *
-     * @param businessKey external process ID (e.g. job ID)
-     * @return internal status information
+     * List all pool instances managed by this provisionr
      */
-    String getStatus(String businessKey);
+    List<PoolInstance> listPoolInstances();
 
     /**
-     * Destroy all the machines from the pool with that id
+     * Trigger pool termination. This will terminate all the machines
      *
-     * @param businessKey external pool ID (e.g. job ID, business key)
+     * @param poolKey external pool unique key
      */
-    void destroyPool(String businessKey);
+    void triggerPoolManagementProcessTermination(String poolKey);
 }

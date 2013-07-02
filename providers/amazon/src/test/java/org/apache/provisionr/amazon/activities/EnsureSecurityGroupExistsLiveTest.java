@@ -38,7 +38,7 @@ import org.apache.provisionr.amazon.functions.ConvertIpPermissionToRule;
 import org.apache.provisionr.amazon.functions.ConvertRuleToIpPermission;
 import org.apache.provisionr.api.network.Network;
 import org.apache.provisionr.api.network.Rule;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.core.CoreProcessVariables;
 import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.After;
@@ -72,12 +72,12 @@ public class EnsureSecurityGroupExistsLiveTest extends AmazonActivityLiveTest<En
 
         final Network network = Network.builder().ingress(ingressRules).createNetwork();
 
-        Pool pool = mock(Pool.class);
+        PoolSpec poolSpec = mock(PoolSpec.class);
 
-        when(pool.getProvider()).thenReturn(provider);
-        when(pool.getNetwork()).thenReturn(network);
+        when(poolSpec.getProvider()).thenReturn(provider);
+        when(poolSpec.getNetwork()).thenReturn(network);
 
-        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(pool);
+        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(poolSpec);
         when(execution.getProcessBusinessKey()).thenReturn(BUSINESS_KEY);
 
         activity.execute(execution);

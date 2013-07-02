@@ -29,7 +29,7 @@ import java.util.List;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.provisionr.amazon.ProcessVariables;
 import org.apache.provisionr.amazon.core.ProviderClientCache;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class AllSpotRequestsMatchPredicate extends AmazonActivity {
     }
 
     @Override
-    public void execute(AmazonEC2 client, Pool pool, DelegateExecution execution) {
+    public void execute(AmazonEC2 client, PoolSpec poolSpec, DelegateExecution execution) {
 
         LOG.info(">> Checking if all spot requests match predicate {}", predicate);
 

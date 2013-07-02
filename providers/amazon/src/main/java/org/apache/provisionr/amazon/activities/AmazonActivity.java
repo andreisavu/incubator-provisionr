@@ -29,7 +29,7 @@ import java.util.List;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 import org.apache.provisionr.amazon.core.ProviderClientCache;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.core.CoreProcessVariables;
 
 public abstract class AmazonActivity implements JavaDelegate {
@@ -43,22 +43,22 @@ public abstract class AmazonActivity implements JavaDelegate {
     /**
      * Amazon specific activity implementation
      *
-     * @param client    Amazon client created using the pool provider
-     * @param pool      Virtual machines pool description
+     * @param client    Amazon client created using the poolSpec provider
+     * @param poolSpec      Virtual machines poolSpec description
      * @param execution Activiti execution context
      */
-    public abstract void execute(AmazonEC2 client, Pool pool, DelegateExecution execution) throws Exception;
+    public abstract void execute(AmazonEC2 client, PoolSpec poolSpec, DelegateExecution execution) throws Exception;
 
     /**
      * Wrap the abstract {@code execute} method with the logic that knows how to create the Amazon client
      */
     @Override
     public void execute(DelegateExecution execution) throws Exception {
-        Pool pool = (Pool) execution.getVariable(CoreProcessVariables.POOL);
-        checkNotNull(pool, "Please add the pool description as a process " +
+        PoolSpec poolSpec = (PoolSpec) execution.getVariable(CoreProcessVariables.POOL);
+        checkNotNull(poolSpec, "Please add the poolSpec description as a process " +
             "variable with the name '%s'.", CoreProcessVariables.POOL);
 
-        execute(providerClientCache.getUnchecked(pool.getProvider()), pool, execution);
+        execute(providerClientCache.getUnchecked(poolSpec.getProvider()), poolSpec, execution);
     }
 
     protected List<Instance> collectInstancesFromReservations(List<Reservation> reservation) {

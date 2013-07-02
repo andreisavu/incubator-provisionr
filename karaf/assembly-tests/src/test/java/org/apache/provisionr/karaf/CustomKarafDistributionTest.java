@@ -129,8 +129,8 @@ public class CustomKarafDistributionTest {
         assertProvisionrServicesAreStartedInLessThan(5000 /* milliseconds */);
         assertPoolTemplatesAreRegisteredInLessThan(5000 /* milliseconds */);
 
-        assertUrlContainsInLessThan(ACTIVITI_EXPLORER_URL, "Vaadin", 10000 /* milliseconds */);
-        assertUrlContainsInLessThan(RUNDECK_RESOURCE_URL, "<project", 10000 /* milliseconds */);
+        assertUrlContainsInLessThan(ACTIVITI_EXPLORER_URL, "Vaadin", 15000 /* milliseconds */);
+        assertUrlContainsInLessThan(RUNDECK_RESOURCE_URL, "<project", 15000 /* milliseconds */);
     }
 
     private void assertUrlContainsInLessThan(

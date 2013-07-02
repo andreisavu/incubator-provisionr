@@ -25,7 +25,7 @@ import java.util.Map;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.provider.Provider;
 import org.apache.provisionr.core.CoreConstants;
 import org.apache.provisionr.core.CoreProcessVariables;
@@ -39,7 +39,7 @@ public class CloudStackProvisionr extends ProvisionrSupport {
     public static final String ID = "cloudstack";
     /**
      * Process key must match the one in
-     *  providers/cloudstack/src/main/resources/OSGI-INF/activiti/cloudstack.bpmn20.xml
+     * providers/cloudstack/src/main/resources/OSGI-INF/activiti/cloudstack.bpmn20.xml
      */
     public static final String PROCESS_KEY = "cloudstack";
 
@@ -68,27 +68,25 @@ public class CloudStackProvisionr extends ProvisionrSupport {
     }
 
     @Override
-    public String startPoolManagementProcess(String businessKey, Pool pool) {
+    public void startPoolManagementProcess(String poolKey, PoolSpec poolSpec) {
         Map<String, Object> arguments = Maps.newHashMap();
 
-        arguments.put(CoreProcessVariables.POOL, pool);
+        arguments.put(CoreProcessVariables.POOL, poolSpec);
         arguments.put(CoreProcessVariables.PROVIDER, getId());
-        arguments.put(CoreProcessVariables.POOL_BUSINESS_KEY, businessKey);
+        arguments.put(CoreProcessVariables.POOL_BUSINESS_KEY, poolKey);
         arguments.put(CoreProcessVariables.BOOTSTRAP_TIMEOUT,
-            convertTimeoutToISO8601TimeDuration(pool.getBootstrapTimeInSeconds()));
+            convertTimeoutToISO8601TimeDuration(poolSpec.getBootstrapTimeInSeconds()));
 
         /* Authenticate as kermit to make the process visible in the Explorer UI */
         processEngine.getIdentityService().setAuthenticatedUserId(CoreConstants.ACTIVITI_EXPLORER_DEFAULT_USER);
 
         RuntimeService runtimeService = processEngine.getRuntimeService();
-        ProcessInstance instance = runtimeService.startProcessInstanceByKey(PROCESS_KEY, businessKey, arguments);
-
-        return instance.getProcessInstanceId();
+        ProcessInstance instance = runtimeService.startProcessInstanceByKey(PROCESS_KEY, poolKey, arguments);
     }
 
     @Override
-    public void destroyPool(String businessKey) {
-        LOG.info("**** CloudStack (destroyPool) id: " + businessKey);
+    public void triggerPoolManagementProcessTermination(String poolKey) {
+        LOG.info("**** CloudStack (destroyPool) id: " + poolKey);
         // TODO use triggerSignalEvent as needed
     }
 }

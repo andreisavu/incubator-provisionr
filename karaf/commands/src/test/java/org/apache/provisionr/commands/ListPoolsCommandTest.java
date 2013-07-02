@@ -18,7 +18,7 @@
 
 package org.apache.provisionr.commands;
 
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.core.CoreProcessVariables;
 import com.google.common.collect.ImmutableList;
 import java.io.ByteArrayOutputStream;
@@ -85,8 +85,8 @@ public class ListPoolsCommandTest {
         );
         final ProcessEngine processEngine = newProcessEngineMock(processes);
 
-        Pool pool = mock(Pool.class);
-        setVariable(processEngine, "p1", CoreProcessVariables.POOL, pool);
+        PoolSpec poolSpec = mock(PoolSpec.class);
+        setVariable(processEngine, "p1", CoreProcessVariables.POOL, poolSpec);
         setVariable(processEngine, "p1", CoreProcessVariables.POOL_BUSINESS_KEY, "k1");
 
         ListPoolsCommand command = new ListPoolsCommand(processEngine);
@@ -98,9 +98,9 @@ public class ListPoolsCommandTest {
         out.flush();
 
         assertThat(outputStream.toString())
-            .contains("Pool Description")
+            .contains("PoolSpec Description")
             .contains("List of Machines")
-            .contains("Pool Key: k1");
+            .contains("PoolSpec Key: k1");
 
         /* run the same command with a filter on business key */
         outputStream.reset();

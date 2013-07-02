@@ -71,7 +71,7 @@ public class PoolTemplateInstaller implements ArtifactInstaller {
     @Override
     public void install(File file) {
         final String absolutePath = file.getAbsolutePath();
-        LOG.info("Installing Pool template from  " + absolutePath);
+        LOG.info("Installing PoolSpec template from  " + absolutePath);
 
         if (!templates.containsKey(absolutePath)) {
             PoolTemplate template = XmlTemplate.newXmlTemplate(file);
@@ -89,7 +89,7 @@ public class PoolTemplateInstaller implements ArtifactInstaller {
     @Override
     public void uninstall(File file) {
         final String absolutePath = file.getAbsolutePath();
-        LOG.info("Uninstalling Pool template for path " + absolutePath);
+        LOG.info("Uninstalling PoolSpec template for path " + absolutePath);
 
         if (templates.containsKey(absolutePath)) {
             templates.remove(absolutePath).unregister();

@@ -22,7 +22,7 @@ import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.DeleteKeyPairRequest;
 import org.apache.provisionr.amazon.core.KeyPairs;
 import org.apache.provisionr.amazon.core.ProviderClientCache;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public class DeleteKeyPair extends AmazonActivity {
     }
 
     @Override
-    public void execute(AmazonEC2 client, Pool pool, DelegateExecution execution) {
+    public void execute(AmazonEC2 client, PoolSpec poolSpec, DelegateExecution execution) {
         String keyName = KeyPairs.formatNameFromBusinessKey(execution.getProcessBusinessKey());
 
         LOG.info(">> Deleting key pair {}", keyName);

@@ -28,7 +28,7 @@ import net.schmizz.sshj.common.Base64;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.provisionr.amazon.core.ProviderClientCache;
 import org.apache.provisionr.api.pool.Machine;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ public class DumpConsoleOutput extends AmazonActivity {
     }
 
     @Override
-    public void execute(AmazonEC2 client, Pool pool, DelegateExecution execution) throws IOException {
+    public void execute(AmazonEC2 client, PoolSpec poolSpec, DelegateExecution execution) throws IOException {
         Machine machine = (Machine) execution.getVariable("machine");
         checkNotNull(machine, "expecting 'machine' as a process variable");
 

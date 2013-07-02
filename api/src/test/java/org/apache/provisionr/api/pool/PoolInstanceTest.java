@@ -16,25 +16,15 @@
  * limitations under the License.
  */
 
-package org.apache.provisionr.core.templates;
+package org.apache.provisionr.api.pool;
 
-import org.apache.provisionr.api.pool.PoolSpec;
-import com.google.common.base.Function;
+import org.junit.Test;
 
-/**
- * Marker interface for pre-configured pools. You can use it by
- * applying the function on an existing pool definition
- */
-public interface PoolTemplate extends Function<PoolSpec, PoolSpec> {
+public class PoolInstanceTest {
 
-    /**
-     * Get the pre-configured pool template identifier
-     */
-    String getId();
+    @Test
+    public void testSerialization() {
+        // TODO
 
-    /**
-     * A short description of this template
-     */
-    String getDescription();
-
+    }
 }

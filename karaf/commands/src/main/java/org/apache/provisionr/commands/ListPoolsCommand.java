@@ -32,7 +32,7 @@ import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
 import org.apache.karaf.shell.console.OsgiCommandSupport;
 import org.apache.provisionr.api.pool.Machine;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.core.CoreProcessVariables;
 
 @Command(scope = "provisionr", name = "pools", description = "List active pools")
@@ -67,24 +67,24 @@ public class ListPoolsCommand extends OsgiCommandSupport {
 
         final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         for (ProcessInstance instance : processes) {
-            Pool pool = (Pool) processEngine.getRuntimeService()
+            PoolSpec poolSpec = (PoolSpec) processEngine.getRuntimeService()
                 .getVariable(instance.getId(), CoreProcessVariables.POOL);
-            if (pool == null) {
+            if (poolSpec == null) {
                 continue; /* skip - this process is not a provisionr process */
             }
 
             String businessKey = (String) processEngine.getRuntimeService()
                 .getVariable(instance.getId(), CoreProcessVariables.POOL_BUSINESS_KEY);
             if (!Objects.equal(instance.getBusinessKey(), businessKey)) {
-                continue; /* ignore - this is a process started by the main pool management process */
+                continue; /* ignore - this is a process started by the main poolSpec management process */
             }
 
             @SuppressWarnings("unchecked")
             List<Machine> machines = (List<Machine>) processEngine.getRuntimeService()
                 .getVariable(instance.getId(), CoreProcessVariables.MACHINES);
 
-            out.println("****** Pool Description ******");
-            out.println(gson.toJson(pool));
+            out.println("****** PoolSpec Description ******");
+            out.println(gson.toJson(poolSpec));
 
             out.println("****** List of Machines ******");
             if (machines != null) {
@@ -92,7 +92,7 @@ public class ListPoolsCommand extends OsgiCommandSupport {
                 }.getType()));
             }
 
-            out.println("Pool Key: " + instance.getBusinessKey());
+            out.println("PoolSpec Key: " + instance.getBusinessKey());
             out.println();
         }
 

@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.provisionr.api.network.Network;
 import org.apache.provisionr.api.network.Rule;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.cloudstack.core.ConvertIngressRuleToRule;
 import org.apache.provisionr.cloudstack.core.SecurityGroups;
 import org.apache.provisionr.core.CoreProcessVariables;
@@ -85,12 +85,12 @@ public class EnsureSecurityGroupExistsLiveTest extends CloudStackActivityLiveTes
     @Test
     public void testCreateSecurityGroup() throws Exception {
         DelegateExecution execution = mock(DelegateExecution.class);
-        Pool pool = mock(Pool.class);
+        PoolSpec poolSpec = mock(PoolSpec.class);
 
-        when(pool.getProvider()).thenReturn(provider);
-        when(pool.getNetwork()).thenReturn(network);
+        when(poolSpec.getProvider()).thenReturn(provider);
+        when(poolSpec.getNetwork()).thenReturn(network);
 
-        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(pool);
+        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(poolSpec);
         when(execution.getProcessBusinessKey()).thenReturn(BUSINESS_KEY);
 
         activity.execute(execution);
@@ -101,20 +101,20 @@ public class EnsureSecurityGroupExistsLiveTest extends CloudStackActivityLiveTes
     @Test
     public void testCreateSecurityGroupWithExistingSecurityGroup() throws Exception {
         DelegateExecution execution = mock(DelegateExecution.class);
-        Pool pool = mock(Pool.class);
+        PoolSpec poolSpec = mock(PoolSpec.class);
 
-        when(pool.getProvider()).thenReturn(provider);
+        when(poolSpec.getProvider()).thenReturn(provider);
 
-        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(pool);
+        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(poolSpec);
         when(execution.getProcessBusinessKey()).thenReturn(BUSINESS_KEY);
 
         // create the SecurityGroup with an extra Network Rule, then call the activity
-        when(pool.getNetwork()).thenReturn(network.toBuilder().addRules(
+        when(poolSpec.getNetwork()).thenReturn(network.toBuilder().addRules(
             Rule.builder().anySource().tcp().port(80).createRule()).createNetwork());
 
         activity.execute(execution);
         // call the process again with the old network rules and check the rules
-        when(pool.getNetwork()).thenReturn(network);
+        when(poolSpec.getNetwork()).thenReturn(network);
 
         activity.execute(execution);
 

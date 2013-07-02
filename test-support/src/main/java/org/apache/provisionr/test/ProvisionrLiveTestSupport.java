@@ -123,7 +123,15 @@ public class ProvisionrLiveTestSupport {
         }
     }
 
-    public void waitForProcessEnd(String processInstanceId) throws Exception {
+    public void waitForProcessEndByBusinessKey(String businessKey) throws Exception {
+        ProcessEngine engine = getOsgiService(ProcessEngine.class, 5000);
+        ProcessInstance instance = engine.getRuntimeService().createProcessInstanceQuery()
+            .processInstanceBusinessKey(businessKey).singleResult();
+
+        waitForProcessEndByInstanceId(instance.getProcessInstanceId());
+    }
+
+    public void waitForProcessEndByInstanceId(String processInstanceId) throws Exception {
         waitForProcessEnd(processInstanceId, 60000 /* milliseconds */);
     }
 

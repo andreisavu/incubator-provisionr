@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.apache.provisionr.api.pool.Machine;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.software.Software;
 import org.apache.provisionr.core.Mustache;
 
@@ -38,10 +38,10 @@ public class InstallPackages extends PuppetActivity {
     }
 
     @Override
-    public String createPuppetScript(Pool pool, Machine machine) {
+    public String createPuppetScript(PoolSpec poolSpec, Machine machine) {
         try {
             return Mustache.toString(InstallPackages.class, PACKAGES_TEMPLATE,
-                ImmutableMap.of("packages", packagesAsListOfMaps(pool.getSoftware())));
+                ImmutableMap.of("packages", packagesAsListOfMaps(poolSpec.getSoftware())));
 
         } catch (IOException e) {
             throw Throwables.propagate(e);

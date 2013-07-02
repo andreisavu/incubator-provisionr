@@ -20,8 +20,8 @@ package org.apache.provisionr.amazon;
 
 import com.google.common.base.Optional;
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -30,7 +30,8 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.apache.provisionr.amazon.config.DefaultProviderConfig;
 import org.apache.provisionr.amazon.options.ProviderOptions;
 import org.apache.provisionr.api.pool.Machine;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolInstance;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.provider.Provider;
 import org.apache.provisionr.core.CoreConstants;
 import org.apache.provisionr.core.CoreProcessVariables;
@@ -72,58 +73,58 @@ public class AmazonProvisionr extends ProvisionrSupport {
     }
 
     @Override
-    public String startPoolManagementProcess(String businessKey, Pool pool) {
+    public void startPoolManagementProcess(String poolKey, PoolSpec poolSpec) {
         Map<String, Object> arguments = Maps.newHashMap();
 
-        arguments.put(CoreProcessVariables.POOL, pool);
+        arguments.put(CoreProcessVariables.POOL, poolSpec);
         arguments.put(CoreProcessVariables.PROVIDER, getId());
-        arguments.put(CoreProcessVariables.POOL_BUSINESS_KEY, businessKey);
-        arguments.put(CoreProcessVariables.BOOTSTRAP_TIMEOUT,
-            convertTimeoutToISO8601TimeDuration(pool.getBootstrapTimeInSeconds()));
-        arguments.put(CoreProcessVariables.IS_CACHED_IMAGE, pool.getSoftware().isCachedImage());
+        arguments.put(CoreProcessVariables.POOL_BUSINESS_KEY, poolKey);
 
-        /* needed because the Activiti EL doesn't work as expected and properties can't be read from the pool. */
-        arguments.put(ProcessVariables.SPOT_BID, pool.getProvider().getOption(ProviderOptions.SPOT_BID));
+        arguments.put(CoreProcessVariables.BOOTSTRAP_TIMEOUT,
+            convertTimeoutToISO8601TimeDuration(poolSpec.getBootstrapTimeInSeconds()));
+
+        arguments.put(CoreProcessVariables.IS_CACHED_IMAGE, poolSpec.getSoftware().isCachedImage());
+
+        /* needed because the Activiti EL doesn't work as expected and properties can't be read from the poolSpec. */
+        arguments.put(ProcessVariables.SPOT_BID, poolSpec.getProvider().getOption(ProviderOptions.SPOT_BID));
 
         /* Authenticate as kermit to make the process visible in the Explorer UI */
         processEngine.getIdentityService().setAuthenticatedUserId(CoreConstants.ACTIVITI_EXPLORER_DEFAULT_USER);
 
         ProcessInstance instance = processEngine.getRuntimeService()
-            .startProcessInstanceByKey(MANAGEMENT_PROCESS_KEY, businessKey, arguments);
+            .startProcessInstanceByKey(MANAGEMENT_PROCESS_KEY, poolKey, arguments);
 
-        return instance.getProcessInstanceId();
+        instance.getProcessInstanceId();
     }
 
     @Override
-    public List<Machine> getMachines(String businessKey) {
+    public PoolInstance getPoolInstance(String poolKey) {
         ProcessInstance instance = processEngine.getRuntimeService().createProcessInstanceQuery()
-            .processInstanceBusinessKey(businessKey).singleResult();
+            .processInstanceBusinessKey(poolKey).singleResult();
         if (instance == null) {
-            throw new NoSuchElementException("No active pool found with key: " + businessKey);
+            throw new NoSuchElementException("No active pool found with key: " + poolKey);
         }
 
         @SuppressWarnings("unchecked") List<Machine> machines = (List<Machine>) processEngine.getRuntimeService()
             .getVariable(instance.getId(), CoreProcessVariables.MACHINES);
 
-        return Optional.fromNullable(machines).or(Collections.<Machine>emptyList());
-    }
-
-    @Override
-    public String getStatus(String businessKey) {
-        ProcessInstance instance = processEngine.getRuntimeService().createProcessInstanceQuery()
-            .processInstanceBusinessKey(businessKey).singleResult();
-        if (instance == null) {
-            throw new NoSuchElementException("No active pool found with key: " + businessKey);
-        }
-
         String status = (String) processEngine.getRuntimeService().getVariable(instance.getId(),
             CoreProcessVariables.STATUS);
 
-        return Optional.fromNullable(status).or(PoolStatus.UNDEFINED);
+        return PoolInstance.builder()
+            .key(poolKey)
+            .status(Optional.fromNullable(status).or(PoolStatus.UNDEFINED))
+            .machines(Optional.fromNullable(machines).or(ImmutableList.<Machine>of()))
+            .createPoolInstance();
     }
 
     @Override
-    public void destroyPool(String businessKey) {
-        triggerSignalEvent(processEngine, businessKey, CoreSignals.TERMINATE_POOL);
+    public List<PoolInstance> listPoolInstances() {
+        return ImmutableList.of();
+    }
+
+    @Override
+    public void triggerPoolManagementProcessTermination(String poolKey) {
+        triggerSignalEvent(processEngine, poolKey, CoreSignals.TERMINATE_POOL);
     }
 }

@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.Map;
 import org.apache.provisionr.api.access.AdminAccess;
 import org.apache.provisionr.api.pool.Machine;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.core.Mustache;
 import org.apache.provisionr.core.activities.PuppetActivity;
 
@@ -43,17 +43,17 @@ public class SetupAdminAccess extends PuppetActivity {
     }
 
     @Override
-    public AdminAccess overrideAdminAccess(Pool pool) {
-        return pool.getAdminAccess().toBuilder().username(DEFAULT_UBUNTU_AMI_USER).createAdminAccess();
+    public AdminAccess overrideAdminAccess(PoolSpec poolSpec) {
+        return poolSpec.getAdminAccess().toBuilder().username(DEFAULT_UBUNTU_AMI_USER).createAdminAccess();
     }
 
     @Override
-    public String createPuppetScript(Pool pool, Machine machine) {
+    public String createPuppetScript(PoolSpec poolSpec, Machine machine) {
         try {
             return Mustache.toString(getClass(), ADMIN_ACCESS_TEMPLATE,
                 ImmutableMap.of(
-                    "user", pool.getAdminAccess().getUsername(),
-                    "publicKey", getRawSshKey(pool))
+                    "user", poolSpec.getAdminAccess().getUsername(),
+                    "publicKey", getRawSshKey(poolSpec))
             );
 
         } catch (IOException e) {
@@ -61,17 +61,17 @@ public class SetupAdminAccess extends PuppetActivity {
         }
     }
 
-    private String getRawSshKey(Pool pool) {
-        return pool.getAdminAccess().getPublicKey().split(" ")[1];
+    private String getRawSshKey(PoolSpec poolSpec) {
+        return poolSpec.getAdminAccess().getPublicKey().split(" ")[1];
     }
 
     @Override
-    public Map<String, String> createAdditionalFiles(Pool pool, Machine machine) {
+    public Map<String, String> createAdditionalFiles(PoolSpec poolSpec, Machine machine) {
         try {
             return ImmutableMap.of(
                 "/tmp/sshd_config",
                 Mustache.toString(getClass(), SSHD_CONFIG_TEMPLATE,
-                    ImmutableMap.of("user", pool.getAdminAccess().getUsername())),
+                    ImmutableMap.of("user", poolSpec.getAdminAccess().getUsername())),
                 "/tmp/sudoers",
                 Resources.toString(Resources.getResource(getClass(), SUDOERS_TEMPLATE), Charsets.UTF_8)
             );

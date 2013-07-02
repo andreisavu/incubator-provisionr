@@ -18,7 +18,7 @@
 
 package org.apache.provisionr.core.activities;
 
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.software.Software;
 import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.Test;
@@ -34,11 +34,11 @@ public class DownloadFilesTest {
             .file("http://google.com", "/opt/google.html")
             .createSoftware();
 
-        Pool pool = mock(Pool.class);
-        when(pool.getSoftware()).thenReturn(software);
+        PoolSpec poolSpec = mock(PoolSpec.class);
+        when(poolSpec.getSoftware()).thenReturn(software);
 
         PuppetActivity activity = new DownloadFiles();
-        String content = activity.createPuppetScript(pool, null);
+        String content = activity.createPuppetScript(poolSpec, null);
 
         assertThat(content)
             .contains("download_file {\"/opt/test.tar.gz\":\n" +
@@ -48,6 +48,6 @@ public class DownloadFilesTest {
                 "  uri => \"http://google.com\"\n" +
                 "}");
 
-        assertThat(activity.createAdditionalFiles(pool, null)).isEmpty();
+        assertThat(activity.createAdditionalFiles(poolSpec, null)).isEmpty();
     }
 }

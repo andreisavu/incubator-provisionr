@@ -24,7 +24,7 @@ import java.util.List;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.provisionr.api.Provisionr;
 import org.apache.provisionr.api.hardware.Hardware;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.software.Software;
 import org.apache.provisionr.core.templates.PoolTemplate;
 
@@ -41,16 +41,20 @@ public class CreateImageCommand extends CreateCommand {
 
     @Override
     protected Object doExecute() {
-        return "Not implemented.";
+        // Provisionr service = getService();
+        // final PoolSpec pool = createPoolOfOne(service);
+        // TODO: create service.startCachingProcess(uuid, pool) in the Provisionr class
+
+        return "Not implemented";
     }
 
     @VisibleForTesting
-    Pool createPoolOfOne(Provisionr service) {
+    PoolSpec createPoolOfOne(Provisionr service) {
 
         final Software software = Software.builder().packages(getPackages()).createSoftware();
         final Hardware hardware = Hardware.builder().type(HARDWARE_TYPE).createHardware();
 
-        final Pool pool = Pool.builder()
+        final PoolSpec poolSpec = PoolSpec.builder()
             .provider(getDefaultProvider(service).get())
             .hardware(hardware)
             .software(software)
@@ -61,8 +65,7 @@ public class CreateImageCommand extends CreateCommand {
             .bootstrapTimeInSeconds(getBootstrapTimeout())
             .createPool();
 
-        return getTemplate() != null ? applyTemplate(pool) : pool;
-
+        return getTemplate() != null ? applyTemplate(poolSpec) : poolSpec;
     }
 
 }

@@ -18,6 +18,7 @@
 
 package org.apache.provisionr.core.activities;
 
+import org.apache.provisionr.api.pool.PoolSpec;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -25,7 +26,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import org.apache.provisionr.api.pool.Machine;
-import org.apache.provisionr.api.pool.Pool;
 import org.apache.provisionr.api.software.Software;
 import org.apache.provisionr.core.CoreProcessVariables;
 import org.apache.provisionr.test.ProcessVariablesCollector;
@@ -50,11 +50,11 @@ public class SpawnProcessForEachMachineTest {
     @Test
     public void testSpawnSampleProcessForLocalhost() throws Exception {
         DelegateExecution execution = mock(DelegateExecution.class);
-        Pool pool = mock(Pool.class, withSettings().serializable());
+        PoolSpec poolSpec = mock(PoolSpec.class, withSettings().serializable());
         Software software = mock(Software.class, withSettings().serializable());
         when(software.isCachedImage()).thenReturn(false);
-        when(pool.getSoftware()).thenReturn(software);
-        when(execution.getVariable(eq(CoreProcessVariables.POOL))).thenReturn(pool);
+        when(poolSpec.getSoftware()).thenReturn(software);
+        when(execution.getVariable(eq(CoreProcessVariables.POOL))).thenReturn(poolSpec);
         when(execution.getVariable(eq(CoreProcessVariables.POOL_BUSINESS_KEY))).thenReturn(BUSINESS_KEY);
 
         List<Machine> machines = Lists.newArrayList(

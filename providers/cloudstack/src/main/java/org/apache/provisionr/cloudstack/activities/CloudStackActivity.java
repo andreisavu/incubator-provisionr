@@ -26,7 +26,7 @@ import com.google.inject.Module;
 import java.util.Properties;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.provider.Provider;
 import org.apache.provisionr.core.CoreProcessVariables;
 import org.jclouds.Constants;
@@ -45,18 +45,18 @@ public abstract class CloudStackActivity implements JavaDelegate {
     /**
      * Implement activity logic in this method. It will be called with a reference to the {@link CloudStackClient}
      */
-    public abstract void execute(CloudStackClient cloudStackClient, Pool pool, DelegateExecution execution);
+    public abstract void execute(CloudStackClient cloudStackClient, PoolSpec poolSpec, DelegateExecution execution);
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
 
         RestContext<CloudStackClient, CloudStackAsyncClient> restContext = null;
         try {
-            Pool pool = Pool.class.cast(checkNotNull(execution.getVariable(CoreProcessVariables.POOL),
-                "Please add 'pool' variable to the process"));
+            PoolSpec poolSpec = PoolSpec.class.cast(checkNotNull(execution.getVariable(CoreProcessVariables.POOL),
+                "Please add 'poolSpec' variable to the process"));
             // delegate
-            restContext = newCloudStackClient(pool.getProvider());
-            execute(restContext.getApi(), pool, execution);
+            restContext = newCloudStackClient(poolSpec.getProvider());
+            execute(restContext.getApi(), poolSpec, execution);
 
         } finally {
             Closeables.closeQuietly(restContext);

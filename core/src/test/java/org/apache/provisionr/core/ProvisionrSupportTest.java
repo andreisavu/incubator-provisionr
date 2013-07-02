@@ -18,10 +18,8 @@
 
 package org.apache.provisionr.core;
 
+import org.apache.provisionr.api.pool.PoolSpec;
 import static org.fest.assertions.api.Assertions.assertThat;
-
-import org.apache.provisionr.api.pool.Pool;
-
 import org.junit.Test;
 
 public class ProvisionrSupportTest {
@@ -29,6 +27,7 @@ public class ProvisionrSupportTest {
     @Test
     public void testConvertTimeout() {
         ProvisionrSupport provisionr = new ProvisionrSupportTestable();
+
         assertThat(provisionr.convertTimeoutToISO8601TimeDuration(600)).isEqualTo("PT10M");
         assertThat(provisionr.convertTimeoutToISO8601TimeDuration(601)).isEqualTo("PT601S");
         assertThat(provisionr.convertTimeoutToISO8601TimeDuration(300)).isEqualTo("PT5M");
@@ -41,10 +40,12 @@ class ProvisionrSupportTestable extends ProvisionrSupport {
     public String getId() {
         return null;
     }
+
     @Override
-    public String startPoolManagementProcess(String businessKey, Pool pool) {
-        return null;
+    public void startPoolManagementProcess(String poolKey, PoolSpec poolSpec) {
     }
+
     @Override
-    public void destroyPool(String businessKey) {}
-};
+    public void triggerPoolManagementProcessTermination(String poolKey) {
+    }
+}

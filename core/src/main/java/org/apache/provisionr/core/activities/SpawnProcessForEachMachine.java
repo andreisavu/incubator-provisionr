@@ -27,7 +27,7 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.apache.provisionr.api.pool.Machine;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.core.CoreConstants;
 import org.apache.provisionr.core.CoreProcessVariables;
 import org.slf4j.Logger;
@@ -62,8 +62,8 @@ public class SpawnProcessForEachMachine implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution execution) {
-        final Pool pool = (Pool) execution.getVariable(CoreProcessVariables.POOL);
-        checkNotNull(pool, "Expecting to find a pool description as process variable");
+        final PoolSpec poolSpec = (PoolSpec) execution.getVariable(CoreProcessVariables.POOL);
+        checkNotNull(poolSpec, "Expecting to find a poolSpec description as process variable");
 
         @SuppressWarnings("unchecked")
         List<Machine> machines = (List<Machine>) execution.getVariable(CoreProcessVariables.MACHINES);
@@ -82,9 +82,9 @@ public class SpawnProcessForEachMachine implements JavaDelegate {
 
             ProcessInstance perMachineProcess = processEngine.getRuntimeService().startProcessInstanceByKey(
                 processKey, perMachineProcessBusinessKey,
-                ImmutableMap.<String, Object>of(CoreProcessVariables.POOL, pool,
+                ImmutableMap.<String, Object>of(CoreProcessVariables.POOL, poolSpec,
                     CoreProcessVariables.POOL_BUSINESS_KEY, poolBusinessKey,
-                    CoreProcessVariables.IS_CACHED_IMAGE, pool.getSoftware().isCachedImage(),
+                    CoreProcessVariables.IS_CACHED_IMAGE, poolSpec.getSoftware().isCachedImage(),
                     MACHINE, machine));
 
             LOG.info("Started background '" + type + "' process {} ({}) for machine {}",

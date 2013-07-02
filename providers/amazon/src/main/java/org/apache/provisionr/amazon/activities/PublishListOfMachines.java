@@ -30,7 +30,7 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.provisionr.amazon.ProcessVariables;
 import org.apache.provisionr.amazon.core.ProviderClientCache;
 import org.apache.provisionr.api.pool.Machine;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.core.CoreProcessVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public class PublishListOfMachines extends AmazonActivity {
     }
 
     @Override
-    public void execute(AmazonEC2 client, Pool pool, DelegateExecution execution) {
+    public void execute(AmazonEC2 client, PoolSpec poolSpec, DelegateExecution execution) {
         @SuppressWarnings("unchecked")
         List<String> instanceIds = (List<String>) execution.getVariable(ProcessVariables.INSTANCE_IDS);
         checkNotNull(instanceIds, "%s not found as a process variable", ProcessVariables.INSTANCE_IDS);

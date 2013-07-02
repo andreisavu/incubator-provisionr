@@ -36,7 +36,7 @@ import org.apache.provisionr.core.CoreProcessVariables;
 @Command(scope = "provisionr", name = "destroy", description = "Destroy pool")
 public class DestroyPoolCommand extends OsgiCommandSupport {
 
-    @Option(name = "-k", aliases = "--key", description = "Pool key", required = true)
+    @Option(name = "-k", aliases = "--key", description = "PoolSpec key", required = true)
     private String businessKey;
 
     private final List<Provisionr> services;
@@ -62,7 +62,7 @@ public class DestroyPoolCommand extends OsgiCommandSupport {
         Optional<Provisionr> service = Iterables.tryFind(services, ProvisionrPredicates.withId(providerId));
 
         if (service.isPresent()) {
-            service.get().destroyPool(businessKey);
+            service.get().triggerPoolManagementProcessTermination(businessKey);
         } else {
             throw new NoSuchElementException("No provisioning service found with id: " + providerId);
         }

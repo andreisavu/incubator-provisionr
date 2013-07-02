@@ -30,7 +30,7 @@ import org.apache.provisionr.api.software.Software;
 
 import org.junit.Test;
 
-public class PoolTest {
+public class PoolSpecTest {
 
     @Test
     public void testSerialization() {
@@ -49,7 +49,7 @@ public class PoolTest {
         final Software software = Software.builder()
             .packages("hadoop-0.20", "hadoop-0.20-native").createSoftware();
 
-        Pool pool = Pool.builder()
+        PoolSpec poolSpec = PoolSpec.builder()
             .provider(provider)
             .network(network)
             .adminAccess(adminAccess)
@@ -61,9 +61,9 @@ public class PoolTest {
             .createPool();
 
 
-        assertThat(pool.getSoftware().getPackages()).contains("hadoop-0.20");
-        assertThat(pool.toBuilder().createPool()).isEqualTo(pool);
+        assertThat(poolSpec.getSoftware().getPackages()).contains("hadoop-0.20");
+        assertThat(poolSpec.toBuilder().createPool()).isEqualTo(poolSpec);
 
-        assertSerializable(pool, Pool.class);
+        assertSerializable(poolSpec, PoolSpec.class);
     }
 }

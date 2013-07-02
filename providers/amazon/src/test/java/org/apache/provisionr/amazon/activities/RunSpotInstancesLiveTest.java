@@ -19,6 +19,7 @@
 package org.apache.provisionr.amazon.activities;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,18 +27,23 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.amazonaws.services.ec2.model.*;
+import com.google.common.base.Predicate;
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.Iterables;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.amazonaws.services.ec2.model.DescribeSpotInstanceRequestsRequest;
-import com.amazonaws.services.ec2.model.DescribeSpotInstanceRequestsResult;
-import com.amazonaws.services.ec2.model.Filter;
 import org.apache.provisionr.amazon.ProcessVariables;
 import org.apache.provisionr.amazon.options.ProviderOptions;
 import org.apache.provisionr.test.ProcessVariablesCollector;
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RunSpotInstancesLiveTest extends CreatePoolLiveTest<RunSpotInstances> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RunSpotInstancesLiveTest.class);
 
     /**
      * This should be set a bit higher than the on demand instance
@@ -55,7 +61,7 @@ public class RunSpotInstancesLiveTest extends CreatePoolLiveTest<RunSpotInstance
                 .option(ProviderOptions.REGION, region)
                 .option(ProviderOptions.SPOT_BID, AMAZON_SPOT_BID)
                 .createProvider();
-        when(pool.getProvider()).thenReturn(provider);
+        when(poolSpec.getProvider()).thenReturn(provider);
     }
 
     @Test
@@ -95,14 +101,38 @@ public class RunSpotInstancesLiveTest extends CreatePoolLiveTest<RunSpotInstance
         ArgumentCaptor<List<String>> argument = (ArgumentCaptor<List<String>>) 
                 (Object) ArgumentCaptor.forClass(List.class);
 
-        executeActivitiesInSequence(execution,
-                CancelSpotRequests.class, 
-                GetInstanceIdsFromSpotRequests.class);
+        executeActivitiesInSequence(execution,CancelSpotRequests.class, GetInstanceIdsFromSpotRequests.class);
 
         verify(execution).setVariable(eq(ProcessVariables.INSTANCE_IDS), argument.capture());
         when(execution.getVariable(ProcessVariables.INSTANCE_IDS)).thenReturn(argument.getValue());
 
         executeActivitiesInSequence(execution, TerminateInstances.class);
+
+        boolean terminated;
+        Stopwatch timer = new Stopwatch().start();
+        do {
+            DescribeInstancesResult result = client.describeInstances(
+                new DescribeInstancesRequest().withInstanceIds(argument.getValue()));
+
+            terminated = Iterables.all(result.getReservations().get(0).getInstances(),
+                new Predicate<Instance>() {
+                    @Override
+                    public boolean apply(Instance instance) {
+                        LOG.info("State for instance " + instance.getInstanceId() + " is " + instance.getState());
+                        return instance.getState().getName().equalsIgnoreCase("terminated");
+                    }
+                });
+
+            if (!terminated) {
+                LOG.info("Waiting for all instances to be terminated 10 more seconds.");
+                TimeUnit.SECONDS.sleep(10);
+
+                if (timer.elapsedTime(TimeUnit.SECONDS) > 180) {
+                    fail("Some instances were still running after 180 seconds of waiting: " + argument.getValue());
+                }
+            }
+        } while (!terminated);
+
         super.tearDown();
     }
 

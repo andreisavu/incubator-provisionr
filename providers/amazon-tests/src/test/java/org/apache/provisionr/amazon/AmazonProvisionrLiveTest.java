@@ -20,7 +20,6 @@ package org.apache.provisionr.amazon;
 
 import com.google.common.base.Stopwatch;
 import java.io.IOException;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +34,8 @@ import org.apache.provisionr.api.network.Network;
 import org.apache.provisionr.api.network.Protocol;
 import org.apache.provisionr.api.network.Rule;
 import org.apache.provisionr.api.pool.Machine;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolInstance;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.provider.Provider;
 import org.apache.provisionr.api.software.Software;
 import org.apache.provisionr.core.PoolStatus;
@@ -125,7 +125,7 @@ public class AmazonProvisionrLiveTest extends ProvisionrLiveTestSupport {
             .createSoftware();
 
         PoolTemplate template = getPoolTemplateWithId(TEST_POOL_TEMPLATE, 5000);
-        final Pool pool = template.apply(Pool.builder()
+        final PoolSpec poolSpec = template.apply(PoolSpec.builder()
             .provider(provider)
             .network(network)
             .adminAccess(adminAccess)
@@ -135,16 +135,17 @@ public class AmazonProvisionrLiveTest extends ProvisionrLiveTestSupport {
             .expectedSize(TEST_POOL_SIZE)
             .createPool());
 
-        final String businessKey = "j-" + UUID.randomUUID().toString();
-        String processInstanceId = provisionr.startPoolManagementProcess(businessKey, pool);
+        final String poolKey = "j-" + UUID.randomUUID().toString();
+        provisionr.startPoolManagementProcess(poolKey, poolSpec);
 
         try {
-            waitForPoolStatus(provisionr, businessKey, PoolStatus.READY);
+            waitForPoolStatus(provisionr, poolKey, PoolStatus.READY);
 
-            List<Machine> machines = provisionr.getMachines(businessKey);
-            assertTrue(machines.size() >= TEST_POOL_SIZE && machines.size() <= TEST_POOL_SIZE);
+            PoolInstance instance = provisionr.getPoolInstance(poolKey);
+            assertTrue(instance.getMachines().size() >= TEST_POOL_SIZE &&
+                instance.getMachines().size() <= TEST_POOL_SIZE);
 
-            for (Machine machine : machines) {
+            for (Machine machine : instance.getMachines()) {
                 assertSshCommand(machine, adminAccess, "test -f " + destinationPath);
 
                 /* These are added through the Jenkins Debian template */
@@ -153,10 +154,10 @@ public class AmazonProvisionrLiveTest extends ProvisionrLiveTestSupport {
                 assertSshCommand(machine, adminAccess, "test -f /etc/apt/sources.list.d/jenkins.list");
             }
         } finally {
-            provisionr.destroyPool(businessKey);
+            provisionr.triggerPoolManagementProcessTermination(poolKey);
 
-            waitForPoolStatus(provisionr, businessKey, PoolStatus.TERMINATED);
-            waitForProcessEnd(processInstanceId);
+            waitForPoolStatus(provisionr, poolKey, PoolStatus.TERMINATED);
+            waitForProcessEndByBusinessKey(poolKey);
         }
     }
 
@@ -205,16 +206,16 @@ public class AmazonProvisionrLiveTest extends ProvisionrLiveTestSupport {
         }
     }
 
-    private void waitForPoolStatus(Provisionr provisionr, String businessKey,
+    private void waitForPoolStatus(Provisionr provisionr, String poolKey,
                                    String expectedStatus) throws InterruptedException, TimeoutException {
         String status;
         for (int i = 0; i < 120; i++) {
             try {
-                status = provisionr.getStatus(businessKey);
+                status = provisionr.getPoolInstance(poolKey).getStatus();
 
             } catch (NoSuchElementException e) {
                 LOG.info(String.format("Pool management process not found with key %s. " +
-                    "Assuming process terminated as expected.", businessKey));
+                    "Assuming process terminated as expected.", poolKey));
                 return;  /* The process ended as expected */
             }
 

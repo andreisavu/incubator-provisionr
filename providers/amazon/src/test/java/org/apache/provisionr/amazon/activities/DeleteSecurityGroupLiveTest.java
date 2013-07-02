@@ -23,7 +23,7 @@ import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.provisionr.amazon.core.SecurityGroups;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.core.CoreProcessVariables;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
@@ -45,10 +45,10 @@ public class DeleteSecurityGroupLiveTest extends AmazonActivityLiveTest<DeleteSe
     @Test
     public void testDeleteSecurityGroup() throws Exception {
         DelegateExecution execution = mock(DelegateExecution.class);
-        Pool pool = mock(Pool.class);
+        PoolSpec poolSpec = mock(PoolSpec.class);
 
-        when(pool.getProvider()).thenReturn(provider);
-        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(pool);
+        when(poolSpec.getProvider()).thenReturn(provider);
+        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(poolSpec);
         when(execution.getProcessBusinessKey()).thenReturn(BUSINESS_KEY);
 
         client.createSecurityGroup(new CreateSecurityGroupRequest()

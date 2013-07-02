@@ -19,14 +19,14 @@
 package org.apache.provisionr.cloudstack.activities;
 
 import org.activiti.engine.delegate.DelegateExecution;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.cloudstack.core.SecurityGroups;
 import org.jclouds.cloudstack.CloudStackClient;
 
 public class DeleteSecurityGroup extends CloudStackActivity {
 
     @Override
-    public void execute(CloudStackClient cloudStackClient, Pool pool, DelegateExecution execution) {
+    public void execute(CloudStackClient cloudStackClient, PoolSpec poolSpec, DelegateExecution execution) {
         String securityGroupName = SecurityGroups.formatNameFromBusinessKey(execution.getProcessBusinessKey());
         SecurityGroups.deleteByName(cloudStackClient, securityGroupName);
     }

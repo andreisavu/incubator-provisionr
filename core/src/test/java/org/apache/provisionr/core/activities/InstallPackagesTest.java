@@ -18,10 +18,8 @@
 
 package org.apache.provisionr.core.activities;
 
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.software.Software;
-import org.apache.provisionr.core.activities.InstallPackages;
-import org.apache.provisionr.core.activities.PuppetActivity;
 import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.Test;
 import static org.mockito.Mockito.mock;
@@ -31,12 +29,12 @@ public class InstallPackagesTest {
 
     @Test
     public void testCreatePuppetScript() throws Exception {
-        Pool pool = mock(Pool.class);
-        when(pool.getSoftware()).thenReturn(Software.builder()
+        PoolSpec poolSpec = mock(PoolSpec.class);
+        when(poolSpec.getSoftware()).thenReturn(Software.builder()
             .packages("git-core", "vim").createSoftware());
 
         PuppetActivity activity = new InstallPackages();
-        String content = activity.createPuppetScript(pool, null);
+        String content = activity.createPuppetScript(poolSpec, null);
 
         assertThat(content).contains(
             "Package { ensure => \"installed\" }\n" +

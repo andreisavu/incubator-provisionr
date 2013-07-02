@@ -25,7 +25,7 @@ import org.apache.provisionr.api.access.AdminAccess;
 import org.apache.provisionr.api.hardware.Hardware;
 import org.apache.provisionr.api.network.Network;
 import org.apache.provisionr.api.network.Rule;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.provider.Provider;
 import org.apache.provisionr.api.software.Software;
 import static org.apache.provisionr.test.KarafTests.installProvisionrFeatures;
@@ -85,11 +85,13 @@ public class CloudStackProvisionrLiveTest extends ProvisionrLiveTestSupport {
 
         final Hardware hardware = Hardware.builder().type("offering").createHardware();
 
-        final Pool pool = Pool.builder().network(network).provider(provider).adminAccess(adminAccess)
+        final PoolSpec poolSpec = PoolSpec.builder().network(network).provider(provider).adminAccess(adminAccess)
             .software(software).hardware(hardware).minSize(1).expectedSize(1).createPool();
 
-        String processId = provisionr.startPoolManagementProcess(UUID.randomUUID().toString(), pool);
-        waitForProcessEnd(processId);
+        String poolKey = UUID.randomUUID().toString();
+        provisionr.startPoolManagementProcess(poolKey, poolSpec);
+
+        waitForProcessEndByBusinessKey(poolKey);
         // TODO: check that the environment is clean
     }
 

@@ -42,8 +42,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.provisionr.api.network.Network;
 import org.apache.provisionr.api.network.NetworkBuilder;
 import org.apache.provisionr.api.network.Rule;
-import org.apache.provisionr.api.pool.Pool;
-import org.apache.provisionr.api.pool.PoolBuilder;
+import org.apache.provisionr.api.pool.PoolSpec;
+import org.apache.provisionr.api.pool.PoolSpecBuilder;
 import org.apache.provisionr.api.software.Repository;
 import org.apache.provisionr.api.software.Software;
 import org.apache.provisionr.api.software.SoftwareBuilder;
@@ -109,14 +109,14 @@ public class XmlTemplate implements PoolTemplate {
     }
 
     @Override
-    public Pool apply(Pool pool) {
-        PoolBuilder result = pool.toBuilder();
+    public PoolSpec apply(PoolSpec poolSpec) {
+        PoolSpecBuilder result = poolSpec.toBuilder();
 
-        result.software(apply(pool.getSoftware()));
-        result.network(apply(pool.getNetwork()));
+        result.software(apply(poolSpec.getSoftware()));
+        result.network(apply(poolSpec.getNetwork()));
 
         if (osVersion != null) {
-            result.provider(pool.getProvider().toBuilder()
+            result.provider(poolSpec.getProvider().toBuilder()
                 .option("version", osVersion).createProvider());
         }
 

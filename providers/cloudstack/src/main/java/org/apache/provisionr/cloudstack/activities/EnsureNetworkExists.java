@@ -18,7 +18,7 @@
 
 package org.apache.provisionr.cloudstack.activities;
 
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.cloudstack.NetworkOptions;
 import org.apache.provisionr.cloudstack.ProcessVariables;
 import org.apache.provisionr.cloudstack.ProviderOptions;
@@ -37,19 +37,19 @@ public class EnsureNetworkExists extends CloudStackActivity {
     private static final Logger LOG = LoggerFactory.getLogger(EnsureNetworkExists.class);
 
     @Override
-    public void execute(CloudStackClient cloudStackClient, Pool pool, DelegateExecution execution) {
+    public void execute(CloudStackClient cloudStackClient, PoolSpec poolSpec, DelegateExecution execution) {
         if (execution.getVariable(ProcessVariables.NETWORK_ID) != null) {
             LOG.warn("Network process variable ({}) will be overwritten!", ProcessVariables.NETWORK_ID);
         }
         Network network;
-        final String existingNetwork = pool.getNetwork().getOption(NetworkOptions.EXISTING_NETWORK_ID);
+        final String existingNetwork = poolSpec.getNetwork().getOption(NetworkOptions.EXISTING_NETWORK_ID);
         if (existingNetwork != null) {
             network = checkNotNull(cloudStackClient.getNetworkClient().getNetwork(existingNetwork),
                 "Network with id " + existingNetwork + " does not exist");
         } else {
             final String networkName = Networks.formatNameFromBusinessKey(execution.getProcessBusinessKey());
-            final String zoneId = pool.getProvider().getOption(ProviderOptions.ZONE_ID);
-            final String networkOfferingId = pool.getProvider().getOption(ProviderOptions.NETWORK_OFFERING_ID);
+            final String zoneId = poolSpec.getProvider().getOption(ProviderOptions.ZONE_ID);
+            final String networkOfferingId = poolSpec.getProvider().getOption(ProviderOptions.NETWORK_OFFERING_ID);
             try {
                 network = Networks.getByName(cloudStackClient, networkName);
                 LOG.info("Network with name {} exists.", networkName);

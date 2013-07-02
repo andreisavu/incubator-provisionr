@@ -29,7 +29,7 @@ import java.util.List;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.provisionr.amazon.ProcessVariables;
 import org.apache.provisionr.amazon.core.ProviderClientCache;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +42,9 @@ public class RunOnDemandInstances extends RunInstances {
     }
 
     @Override
-    public void execute(AmazonEC2 client, Pool pool, DelegateExecution execution) throws IOException {
+    public void execute(AmazonEC2 client, PoolSpec poolSpec, DelegateExecution execution) throws IOException {
 
-        final RunInstancesRequest request = createOnDemandInstancesRequest(pool, execution);
+        final RunInstancesRequest request = createOnDemandInstancesRequest(poolSpec, execution);
         // TODO allow for more options (e.g. monitoring & termination protection etc.)
 
         LOG.info(">> Sending RunInstances request: {}", request);

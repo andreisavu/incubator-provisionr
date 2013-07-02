@@ -19,7 +19,7 @@
 package org.apache.provisionr.amazon.activities;
 
 import org.apache.provisionr.api.access.AdminAccess;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.core.activities.PuppetActivity;
 import org.apache.provisionr.test.TestConstants;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -31,7 +31,7 @@ public class SetupAdminAccessTest {
 
     @Test
     public void testCreatePuppetScript() throws Exception {
-        Pool pool = mock(Pool.class);
+        PoolSpec poolSpec = mock(PoolSpec.class);
 
         final AdminAccess adminAccess = AdminAccess.builder()
             .privateKey(TestConstants.PRIVATE_KEY)
@@ -39,10 +39,10 @@ public class SetupAdminAccessTest {
             .username(System.getProperty("user.name"))
             .createAdminAccess();
 
-        when(pool.getAdminAccess()).thenReturn(adminAccess);
+        when(poolSpec.getAdminAccess()).thenReturn(adminAccess);
 
         PuppetActivity activity = new SetupAdminAccess();
-        String content = activity.createPuppetScript(pool, null);
+        String content = activity.createPuppetScript(poolSpec, null);
 
         final String username = adminAccess.getUsername();
 

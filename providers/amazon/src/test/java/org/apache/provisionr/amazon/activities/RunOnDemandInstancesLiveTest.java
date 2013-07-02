@@ -18,31 +18,32 @@
 
 package org.apache.provisionr.amazon.activities;
 
-import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
-import com.amazonaws.services.ec2.model.DescribeInstancesResult;
-import com.amazonaws.services.ec2.model.DescribeVolumesRequest;
-import com.amazonaws.services.ec2.model.DescribeVolumesResult;
-import com.amazonaws.services.ec2.model.Instance;
-import com.amazonaws.services.ec2.model.InstanceBlockDeviceMapping;
-import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
-import com.amazonaws.services.ec2.model.Volume;
+import com.amazonaws.services.ec2.model.*;
+import com.google.common.base.Predicate;
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.apache.provisionr.amazon.ProcessVariables;
 import org.apache.provisionr.api.hardware.BlockDevice;
 import org.apache.provisionr.test.ProcessVariablesCollector;
-import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class RunOnDemandInstancesLiveTest extends CreatePoolLiveTest<RunOnDemandInstances> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RunOnDemandInstancesLiveTest.class);
 
     private static final String UBUNTU_AMI_ID = "ami-1e831d77"; // Ubuntu 13.04 amd64
     private ProcessVariablesCollector collector;
@@ -123,7 +124,8 @@ public class RunOnDemandInstancesLiveTest extends CreatePoolLiveTest<RunOnDemand
     @Test
     public void testRunInstancesWithABaseImageId() throws Exception {
         when(software.getImageId()).thenReturn(UBUNTU_AMI_ID);
-        when(pool.getSoftware()).thenReturn(software);
+        when(poolSpec.getSoftware()).thenReturn(software);
+
         activity.execute(execution);
 
         @SuppressWarnings("unchecked")
@@ -141,9 +143,31 @@ public class RunOnDemandInstancesLiveTest extends CreatePoolLiveTest<RunOnDemand
         List<String> instanceIds = (List<String>) collector.getVariable(ProcessVariables.INSTANCE_IDS);
         client.terminateInstances(new TerminateInstancesRequest().withInstanceIds(instanceIds));
 
-        // TODO: this behaves strangely, if it tries to delete the security group 
-        // and the instances are not yet killed, the test fails with an error
-        Uninterruptibles.sleepUninterruptibly(45, TimeUnit.SECONDS);
+        boolean terminated;
+        Stopwatch timer = new Stopwatch().start();
+        do {
+            DescribeInstancesResult result = client.describeInstances(
+                new DescribeInstancesRequest().withInstanceIds(instanceIds));
+
+            terminated = Iterables.all(result.getReservations().get(0).getInstances(),
+                new Predicate<Instance>() {
+                    @Override
+                    public boolean apply(Instance instance) {
+                        LOG.info("State for instance " + instance.getInstanceId() + " is " + instance.getState());
+                        return instance.getState().getName().equalsIgnoreCase("terminated");
+                    }
+                });
+
+            if (!terminated) {
+                LOG.info("Waiting for all instances to be terminated 10 more seconds.");
+                TimeUnit.SECONDS.sleep(10);
+
+                if (timer.elapsedTime(TimeUnit.SECONDS) > 180) {
+                    fail("Some instances were still running after 180 seconds of waiting: " + instanceIds);
+                }
+            }
+        } while (!terminated);
+
         super.tearDown();
     }
 }

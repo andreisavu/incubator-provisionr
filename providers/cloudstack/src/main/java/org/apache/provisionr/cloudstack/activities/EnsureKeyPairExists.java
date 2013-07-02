@@ -18,7 +18,7 @@
 
 package org.apache.provisionr.cloudstack.activities;
 
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.cloudstack.core.KeyPairs;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.jclouds.cloudstack.CloudStackClient;
@@ -33,22 +33,22 @@ public class EnsureKeyPairExists extends CloudStackActivity {
     private static final Logger LOG = LoggerFactory.getLogger(EnsureKeyPairExists.class);
 
     @Override
-    public void execute(CloudStackClient cloudStackClient, Pool pool, DelegateExecution execution) {
+    public void execute(CloudStackClient cloudStackClient, PoolSpec poolSpec, DelegateExecution execution) {
         String keyName = KeyPairs.formatNameFromBusinessKey(execution.getProcessBusinessKey());
         LOG.info("Creating admin access key pair as {}", keyName);
         SSHKeyPairClient sshKeyPairClient = cloudStackClient.getSSHKeyPairClient();
         try {
-            SshKeyPair sshKeyPair = sshKeyPairClient.registerSSHKeyPair(keyName, pool.getAdminAccess().getPublicKey());
+            SshKeyPair sshKeyPair = sshKeyPairClient.registerSSHKeyPair(keyName, poolSpec.getAdminAccess().getPublicKey());
             LOG.info("Registered remote key with fingerprint {}", sshKeyPair.getFingerprint());
         } catch (IllegalStateException e) {
             LOG.warn("Key with name {} already exists", keyName);
             SshKeyPair key = sshKeyPairClient.getSSHKeyPair(keyName);
-            if (key.getFingerprint().equals(SshKeys.fingerprintPublicKey(pool.getAdminAccess().getPublicKey()))) {
+            if (key.getFingerprint().equals(SshKeys.fingerprintPublicKey(poolSpec.getAdminAccess().getPublicKey()))) {
                 LOG.info("Fingerprints match. Not updating admin access key pair.");
             } else {
                 LOG.info("Fingerprint do not match. Replacing admin access key pair.");
                 sshKeyPairClient.deleteSSHKeyPair(keyName);
-                sshKeyPairClient.registerSSHKeyPair(keyName, pool.getAdminAccess().getPublicKey());
+                sshKeyPairClient.registerSSHKeyPair(keyName, poolSpec.getAdminAccess().getPublicKey());
             }
         }
     }

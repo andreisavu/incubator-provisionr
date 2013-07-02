@@ -18,9 +18,6 @@
 
 package org.apache.provisionr.core;
 
-import org.apache.provisionr.api.Provisionr;
-import org.apache.provisionr.api.pool.Machine;
-import org.apache.provisionr.api.provider.Provider;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -29,6 +26,9 @@ import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.apache.provisionr.api.Provisionr;
+import org.apache.provisionr.api.pool.PoolInstance;
+import org.apache.provisionr.api.provider.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,12 +42,12 @@ public abstract class ProvisionrSupport implements Provisionr {
     }
 
     @Override
-    public String getStatus(String businessKey) {
-        return PoolStatus.UNDEFINED;
+    public PoolInstance getPoolInstance(String poolKey) {
+        throw new NoSuchElementException("Method not implemented");
     }
 
     @Override
-    public List<Machine> getMachines(String businessKey) {
+    public List<PoolInstance> listPoolInstances() {
         return ImmutableList.of();
     }
 
@@ -81,9 +81,9 @@ public abstract class ProvisionrSupport implements Provisionr {
 
     /**
      * Convert a timeout specified in seconds to a string representation that can be used
-     * inside the Activiti definitions of timeouts. 
-     * 
-     * @see http://en.wikipedia.org/wiki/ISO_8601#Durations
+     * inside the Activiti definitions of timeouts.
+     *
+     * @see <a href="http://en.wikipedia.org/wiki/ISO_8601#Durations" />
      */
     protected String convertTimeoutToISO8601TimeDuration(int bootstrapTimeoutInSeconds) {
         StringBuilder result = new StringBuilder("PT");

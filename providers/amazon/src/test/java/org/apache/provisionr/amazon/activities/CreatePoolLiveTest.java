@@ -25,7 +25,7 @@ import org.apache.provisionr.api.hardware.BlockDevice;
 import org.apache.provisionr.api.hardware.Hardware;
 import org.apache.provisionr.api.network.Network;
 import org.apache.provisionr.api.network.Rule;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import org.apache.provisionr.api.software.Software;
 import org.apache.provisionr.core.CoreProcessVariables;
 import static org.mockito.Mockito.mock;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 public abstract class CreatePoolLiveTest<T extends AmazonActivity> extends AmazonActivityLiveTest<T> {
 
     protected DelegateExecution execution;
-    protected Pool pool;
+    protected PoolSpec poolSpec;
 
     protected Hardware hardware;
     protected Software software;
@@ -44,7 +44,7 @@ public abstract class CreatePoolLiveTest<T extends AmazonActivity> extends Amazo
     public void setUp() throws Exception {
         super.setUp();
         execution = mock(DelegateExecution.class);
-        pool = mock(Pool.class);
+        poolSpec = mock(PoolSpec.class);
 
         final AdminAccess adminAccess = AdminAccess.builder()
             .username("admin")
@@ -58,20 +58,20 @@ public abstract class CreatePoolLiveTest<T extends AmazonActivity> extends Amazo
         hardware = mock(Hardware.class);
         when(hardware.getType()).thenReturn("t1.micro");
         when(hardware.getBlockDevices()).thenReturn(new ArrayList<BlockDevice>());
-        when(pool.getHardware()).thenReturn(hardware);
+        when(poolSpec.getHardware()).thenReturn(hardware);
 
         software = mock(Software.class);
-        when(pool.getSoftware()).thenReturn(software);
+        when(poolSpec.getSoftware()).thenReturn(software);
 
-        when(pool.getProvider()).thenReturn(provider);
-        when(pool.getAdminAccess()).thenReturn(adminAccess);
-        when(pool.getNetwork()).thenReturn(network);
+        when(poolSpec.getProvider()).thenReturn(provider);
+        when(poolSpec.getAdminAccess()).thenReturn(adminAccess);
+        when(poolSpec.getNetwork()).thenReturn(network);
 
-        when(pool.getMinSize()).thenReturn(1);
-        when(pool.getExpectedSize()).thenReturn(1);
+        when(poolSpec.getMinSize()).thenReturn(1);
+        when(poolSpec.getExpectedSize()).thenReturn(1);
 
         when(execution.getProcessBusinessKey()).thenReturn(BUSINESS_KEY);
-        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(pool);
+        when(execution.getVariable(CoreProcessVariables.POOL)).thenReturn(poolSpec);
 
         executeActivitiesInSequence(execution,
             EnsureKeyPairExists.class,

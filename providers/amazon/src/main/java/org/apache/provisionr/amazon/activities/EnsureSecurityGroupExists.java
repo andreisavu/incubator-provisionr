@@ -32,7 +32,7 @@ import org.apache.provisionr.amazon.core.ProviderClientCache;
 import org.apache.provisionr.amazon.core.SecurityGroups;
 import org.apache.provisionr.amazon.functions.ConvertRuleToIpPermission;
 import org.apache.provisionr.api.network.Network;
-import org.apache.provisionr.api.pool.Pool;
+import org.apache.provisionr.api.pool.PoolSpec;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -52,7 +52,7 @@ public class EnsureSecurityGroupExists extends AmazonActivity {
     }
 
     @Override
-    public void execute(AmazonEC2 client, Pool pool, DelegateExecution execution) {
+    public void execute(AmazonEC2 client, PoolSpec poolSpec, DelegateExecution execution) {
         final String businessKey = execution.getProcessBusinessKey();
         final String groupName = SecurityGroups.formatNameFromBusinessKey(businessKey);
 
@@ -67,13 +67,13 @@ public class EnsureSecurityGroupExists extends AmazonActivity {
         } catch (AmazonServiceException e) {
             if (e.getErrorCode().equals(ErrorCodes.DUPLICATE_SECURITY_GROUP)) {
                 LOG.warn(String.format("<< Security Group %s already exists. " +
-                    "Synchronizing ingress rules.", groupName), e);
+                    "Synchronizing ingress rules.", groupName));
             } else {
                 throw Throwables.propagate(e);
             }
         }
 
-        synchronizeIngressRules(client, groupName, pool.getNetwork());
+        synchronizeIngressRules(client, groupName, poolSpec.getNetwork());
     }
 
     private void synchronizeIngressRules(AmazonEC2 client, String groupName, Network network) {
